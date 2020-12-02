@@ -28,10 +28,10 @@ import requests
 SEAGULL_CLIENT_DEFAULT_PORT = 9000
 SEAGULL_SERVER_DEFAULT_PORT = 9100
 
-SEAGULL_CLIENT_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_client.ksh {1}:' + str(
-    SEAGULL_CLIENT_DEFAULT_PORT)
-SEAGULL_SERVER_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_server.ksh {1}:' + str(
-    SEAGULL_SERVER_DEFAULT_PORT)
+SEAGULL_CLIENT_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_client.ksh {1}:' + \
+                     str(SEAGULL_CLIENT_DEFAULT_PORT)
+SEAGULL_SERVER_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_server.ksh {1}:' + \
+                     str(SEAGULL_SERVER_DEFAULT_PORT)
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | grep client-protocol-stat.%s " + \
                                  "| head -n 1 |awk '{print $9}'"
@@ -146,32 +146,29 @@ class Seagull(object):
         except Exception as e1:
             print('ramp' + url + ' failed')
 
+    def stop(self, control_port):
+        try:
+            url = "http://{0}:{1}/seagull/command/stop".format(self.linux.ip, control_port)
+            requests.put(url)
+        except Exception as e1:
+            print('stop' + url + ' failed')
 
-def stop(self, control_port):
-    try:
-        url = "http://{0}:{1}/seagull/command/stop".format(self.linux.ip, control_port)
-        requests.put(url)
-    except Exception as e1:
-        print('stop' + url + ' failed')
+    def pause(self, control_port):
+        try:
+            url = "http://{0}:{1}/seagull/command/pause".format(self.linux.ip, control_port)
+            requests.put(url)
+        except Exception as e1:
+            print('pause' + url + ' failed')
 
-
-def pause(self, control_port):
-    try:
-        url = "http://{0}:{1}/seagull/command/pause".format(self.linux.ip, control_port)
-        requests.put(url)
-    except Exception as e1:
-        print('pause' + url + ' failed')
-
-
-def burst(self, control_port):
-    """
-    only for client
-    """
-    try:
-        url = "http://{0}:{1}/seagull/command/burst".format(self.linux.ip, control_port)
-        requests.put(url)
-    except Exception as e1:
-        print('burst' + url + ' failed')
+    def burst(self, control_port):
+        """
+        only for client
+        """
+        try:
+            url = "http://{0}:{1}/seagull/command/burst".format(self.linux.ip, control_port)
+            requests.put(url)
+        except Exception as e1:
+            print('burst' + url + ' failed')
 
 
 class SeagullTask(object):
