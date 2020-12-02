@@ -181,7 +181,7 @@ class SeagullTask(object):
     def set(self, vm_ips, test_caps, test_times):
         return {}
 
-    def __check(self, vm_ips):
+    def check(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
@@ -193,7 +193,7 @@ class SeagullTask(object):
     def start(self, vm_ips):
         # 1、check vm status
         result = {'code': 200, 'message': 'ok'}
-        check_ip = self.__check(vm_ips)
+        check_ip = self.check(vm_ips)
         if check_ip:
             result['code'] = 500
             result['data'] = check_ip
@@ -222,7 +222,7 @@ class SeagullTask(object):
                 if response.status_code != 200:
                     break
 
-            result['data'] = self.__download(vm_ips)
+            result['data'] = self.download(vm_ips)
             return result
 
     def pause(self, vm_ips):
@@ -239,12 +239,14 @@ class SeagullTask(object):
             seagull.stop(SEAGULL_SERVER_DEFAULT_PORT)
         return
 
-    def __download(self, vm_ips):
-        result = {}
+    def download(self, vm_ips):
+        result = {'key1': 0, 'key2': 0}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.download(self.protocol)
-            # calc
+            out = seagull.download(self.protocol)
+            if out:
+                result['key1'] += out[0]
+                result['key2'] += out[1]
         return result
 
     def dump(self, vm_ips):
