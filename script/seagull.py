@@ -150,7 +150,8 @@ class Seagull(object):
 
     def ramp(self, control_port, value, duration):
         try:
-            url = "http://{0}:{1}/seagull/command/ramp?value={3}&duration={4}".format(self.linux.ip, control_port, value, duration)
+            url = "http://{0}:{1}/seagull/command/ramp?value={3}&duration={4}".format(self.linux.ip, control_port,
+                                                                                      value, duration)
             requests.put(url)
         except Exception as e1:
             print('ramp' + url + ' failed')
@@ -197,9 +198,12 @@ class SeagullTask(object):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             response = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            if response.status_code != 200: return vm_ip
+            if response.status_code != 200:
+                return vm_ip
             response = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            if response.status_code != 200: return vm_ip
+            if response.status_code != 200:
+                return vm_ip
+        return
 
     def start(self, vm_ips):
         # 1、check vm status
