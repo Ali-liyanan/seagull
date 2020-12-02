@@ -77,16 +77,6 @@ class Linux(object):
     def close(self):
         self.ssh_client.close()
 
-    # def send(self, cmd):
-    #     cmd += '\r'
-    #     result = ''
-    #     remote_conn = self.ssh_client.invoke_shell()
-    #     remote_conn.send(cmd)
-    #     while True:
-    #         sleep(0.5)
-    #         result += remote_conn.recv(65535).decode('utf-8')
-    #         return result
-
     def send(self, cmd):
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
         return stdout.read().decode('utf-8').strip(), stderr.read().decode('utf-8').strip()
