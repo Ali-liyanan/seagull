@@ -64,7 +64,7 @@ class Linux(object):
                 self.ssh_client = paramiko.SSHClient()
                 self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 self.ssh_client.connect(hostname=self.ip, username=self.username, password=self.password)
-                # print("Successful connection->".format(self.ip))
+                print("Successful connection->".format(self.ip))
                 return
             except Exception as e1:
                 if self.try_times != 0:
