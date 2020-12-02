@@ -88,8 +88,8 @@ class Linux(object):
     #         return result
 
     def send(self, cmd):
-        stdin, stdout, stderr = self.ssh_client.exec_command(cmd.replace('\n', ''))
-        return stdout.read().decode('utf-8').replace('\n', ''), stderr.read().decode('utf-8').replace('\n', '')
+        stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
+        return stdout.read().decode('utf-8').strip(), stderr.read().decode('utf-8').strip()
 
 
 class Seagull(object):
