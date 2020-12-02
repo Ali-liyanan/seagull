@@ -254,9 +254,9 @@ class SeagullTask(object):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            counters[vm_ip]['client'] = client_rsp.status_code == 200 if client_rsp.text else None
+            counters[vm_ip]['client'] = client_rsp.text if client_rsp.status_code == 200 else None
             server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            counters[vm_ip]['server'] = server_rsp.status_code == 200 if server_rsp.text else None
+            counters[vm_ip]['server'] = server_rsp.text if server_rsp.status_code == 200 else None
         return counters
 
 
