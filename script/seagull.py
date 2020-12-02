@@ -197,11 +197,9 @@ class SeagullTask(object):
     def __check(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
-            response = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            if response.status_code != 200:
-                return vm_ip
-            response = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            if response.status_code != 200:
+            client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
+            server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
+            if client_rsp.status_code != 200 or server_rsp.status_code != 200:
                 return vm_ip
         return
 
