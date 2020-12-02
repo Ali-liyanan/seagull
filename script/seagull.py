@@ -89,7 +89,7 @@ class Linux(object):
 
     def send(self, cmd):
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd.replace('\n', ''))
-        return stdout.read().decode('utf-8'), stderr.read().decode('utf-8')
+        return stdout.read().decode('utf-8').replace('\n', ''), stderr.read().decode('utf-8').replace('\n', '')
 
 
 class Seagull(object):
@@ -121,25 +121,14 @@ class Seagull(object):
             self.linux.connect()
             if mode == 'client':
                 file_cmd = SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol)
-                print(file_cmd)
                 out, err = self.linux.send(file_cmd)
-                print(out, err)
-
                 filter_cmd = SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out)
-                print(filter_cmd)
-                result = self.linux.send(filter_cmd)
-                print(result)
             else:
                 file_cmd = SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol)
-                print(file_cmd)
                 out, err = self.linux.send(file_cmd)
-                print(out, err)
-
                 filter_cmd = SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out)
-                print(filter_cmd)
-                result = self.linux.send(filter_cmd)
-                print(result)
-            return result
+            out = self.linux.send(filter_cmd)
+            return out[0].split(';') if out[0] else None
         except Exception as e1:
             print('download {0}:{1}:{2} failed'.format(self.linux.ip, protocol, mode))
         finally:
@@ -265,7 +254,6 @@ class SeagullTask(object):
         result = {}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            SEAGULL_CLIENT_RESULT_FILE_CMD
             seagull.download(self.protocol)
             # calc
         return result
@@ -281,7 +269,7 @@ class SeagullTask(object):
 
 if __name__ == '__main__':
     seagull = Seagull(Linux('192.168.245.136', 'cmcc', 'cmcc123'))
-    seagull.download('diameter', 'client')
+    print(seagull.download('diameter', 'client'))
 
     # parser = argparse.ArgumentParser(description="Seagull Task Controller",
     #                                  formatter_class=argparse.RawTextHelpFormatter)
