@@ -60,6 +60,12 @@ class Linux(object):
         self.try_times = 3
         self.ssh_client = None
 
+    def __str__(self):
+        return str(vars(self))
+
+    def __repr__(self):
+        return str(self)
+
     def connect(self):
         while True:
             try:
@@ -87,6 +93,12 @@ class Linux(object):
 class Seagull(object):
     def __init__(self, linux):
         self.linux = linux
+
+    def __str__(self):
+        return str(vars(self))
+
+    def __repr__(self):
+        return str(self)
 
     def set(self, protocol):
         try:
@@ -214,30 +226,17 @@ class SeagullTask(object):
         self.conf = conf or {}
         self.instrument = instrument
 
-    def set(self, vm_ips, test_caps, test_times):
-        for vm_ip, cap in zip(vm_ips, test_caps):
-            seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set(self.protocol)
-        return {}
-
-    def check(self, vm_ips):
-        for vm_ip in vm_ips:
-            seagull = Seagull(Linux(vm_ip))
-            client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            if client_rsp.status_code != 200 or server_rsp.status_code != 200:
-                return vm_ip
-        return
-
     def start(self, vm_ips):
         # 1、check vm status
-        check_ip = self.check(vm_ips)
+        check_ip = self.__check(vm_ips)
         if check_ip:
             msg = 'VM {0} is running'.format(check_ip)
             print(msg)
             raise SeagullException(9999, msg)
 
-        # 2、start vm
+        # 2、set vm config
+
+        # 3、start vm
         started_vm_ips = []
         for vm_ip in vm_ips:
             try:
@@ -248,7 +247,7 @@ class SeagullTask(object):
                 print(e1)
                 break
 
-        # 3、rollback vm or return the execute result 
+        # 4、rollback vm or return the execute result
         if not started_vm_ips:
             self.stop(started_vm_ips)
             msg = 'VM {0} start failed'.format(vm_ip)
@@ -262,7 +261,7 @@ class SeagullTask(object):
                 if response.status_code != 200:
                     break
 
-        return self.download(vm_ips)
+        return self.__download(vm_ips)
 
     def pause(self, vm_ips):
         for vm_ip in vm_ips:
@@ -278,7 +277,17 @@ class SeagullTask(object):
             seagull.stop(SEAGULL_SERVER_DEFAULT_PORT)
         return {}
 
-    def download(self, vm_ips):
+    def dump(self, vm_ips):
+        counters = {}
+        for vm_ip in vm_ips:
+            seagull = Seagull(Linux(vm_ip))
+            client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
+            counters[vm_ip]['client'] = client_rsp.text if client_rsp.status_code == 200 else None
+            server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
+            counters[vm_ip]['server'] = server_rsp.text if server_rsp.status_code == 200 else None
+        return counters
+
+    def __download(self, vm_ips):
         result = {'client': {'call_rate': 0, 'elapsed_time': None, 'outgoing_calls': 0},
                   'server': {'incoming_calls': 0},
                   'failed_calls': 0}
@@ -297,21 +306,23 @@ class SeagullTask(object):
             result['client']['failed_calls'] = result['client']['incoming_calls'] - result['client']['outgoing_calls']
         return result
 
-    def dump(self, vm_ips):
-        counters = {}
+    def __set(self, vm_ips, test_caps, test_times):
+        for vm_ip, cap in zip(vm_ips, test_caps):
+            seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
+            seagull.set(self.protocol)
+        return {}
+
+    def __check(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            counters[vm_ip]['client'] = client_rsp.text if client_rsp.status_code == 200 else None
             server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            counters[vm_ip]['server'] = server_rsp.text if server_rsp.status_code == 200 else None
-        return counters
+            if client_rsp.status_code != 200 or server_rsp.status_code != 200:
+                return vm_ip
+        return
 
 
 if __name__ == '__main__':
-    # seagull = Seagull(Linux('192.168.245.136', 'cmcc', 'cmcc123'))
-    # print(seagull.download('diameter', 'client'))
-
     parser = argparse.ArgumentParser(description="Seagull Task Controller",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
