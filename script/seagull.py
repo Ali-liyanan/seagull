@@ -101,11 +101,6 @@ class Seagull(object):
             self.linux.close()
 
     def download_client(self, protocol):
-        """
-        :param protocol:
-        :param mode: client or server
-        :return: 
-        """
         try:
             self.linux.connect()
             file_cmd = SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol)
@@ -121,11 +116,6 @@ class Seagull(object):
             self.linux.close()
 
     def download_server(self, protocol):
-        """
-        :param protocol:
-        :param mode: client or server
-        :return:
-        """
         try:
             self.linux.connect()
             file_cmd = SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol)
