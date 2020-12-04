@@ -61,6 +61,7 @@ parameters:
     description: string for protocol
     type: string
     short_option: B
+    default_value: diameter
     long_option: protocol
     is_optional: false
   - name: mode
