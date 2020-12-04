@@ -40,6 +40,9 @@ SEAGULL_SERVER_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | g
                                  "| head -n 1 |awk '{print $9}'"
 SEAGULL_SERVER_RESULT_FILTER_CMD = r"sudo cat /opt/seagull/data/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 1,2"
 
+SEAGULL_CLIENT_CONFIG_CMD = ''
+SEAGULL_SERVER_CONFIG_CMD = ''
+
 
 class SeagullException(Exception):
     def __init__(self, code, message):
@@ -85,10 +88,25 @@ class Seagull(object):
     def __init__(self, linux):
         self.linux = linux
 
-    def send(self, protocol):
-        client_cmd = SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip)
-        server_cmd = SEAGULL_SERVER_CMD.format(protocol, self.linux.ip)
+    def set(self, protocol):
         try:
+            client_cmd = SEAGULL_CLIENT_CONFIG_CMD.format(protocol)
+            server_cmd = SEAGULL_SERVER_CONFIG_CMD.format(protocol)
+            self.linux.connect()
+            client_out, client_err = self.linux.send(client_cmd)
+            server_out, server_err = self.linux.send(server_cmd)
+            if (not client_err) or (not server_err):
+                raise SeagullException(9999, 'Set VM {0} config failed'.format(self.linux.ip))
+        except Exception as e1:
+            print(str(e1))
+            raise e1
+        finally:
+            self.linux.close()
+
+    def start(self, protocol):
+        try:
+            client_cmd = SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip)
+            server_cmd = SEAGULL_SERVER_CMD.format(protocol, self.linux.ip)
             self.linux.connect()
             client_out, client_err = self.linux.send(client_cmd)
             server_out, server_err = self.linux.send(server_cmd)
@@ -197,6 +215,9 @@ class SeagullTask(object):
         self.instrument = instrument
 
     def set(self, vm_ips, test_caps, test_times):
+        for vm_ip, cap in zip(vm_ips, test_caps):
+            seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
+            seagull.set(self.protocol)
         return {}
 
     def check(self, vm_ips):
@@ -221,7 +242,7 @@ class SeagullTask(object):
         for vm_ip in vm_ips:
             try:
                 seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-                seagull.send(self.protocol)
+                seagull.start(self.protocol)
                 started_vm_ips.append(vm_ip)
             except SeagullException as e1:
                 print(e1)
