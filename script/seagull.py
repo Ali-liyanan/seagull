@@ -305,8 +305,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Seagull Task Controller",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
-    parser.add_argument('--vm-ips', nargs='+', action='store', dest='vm_ips', help='VM IPs for seagull')
-    parser.add_argument('--caps', nargs='+', action='store', dest='test_caps', help='Caps for seagull case')
+    parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
+    parser.add_argument('--caps', action='store', dest='test_caps', help='Caps for seagull case')
     parser.add_argument('--test-times', action='store', dest='test_times', help='Test times for seagull case')
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
     parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
@@ -320,8 +320,8 @@ if __name__ == '__main__':
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
-    vm_ips = args.vm_ips
-    test_caps = args.test_caps
+    vm_ips = args.vm_ip.split(';') if args.vm_ip else []
+    test_caps = args.test_caps.split(';') if args.test_caps else []
     test_times = args.test_times
     instrument = args.instrument
     mode = args.mode if args.mode else 'dump'
