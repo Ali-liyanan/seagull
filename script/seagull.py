@@ -243,13 +243,14 @@ class SeagullTask(object):
                 seagull.start(self.protocol)
                 started_vm_ips.append(vm_ip)
             except SeagullException as e1:
-                print(e1)
+                msg = 'VM {0} start failed'.format(vm_ip)
+                print(msg)
                 break
 
         # 4、rollback vm or return the execute result
         if not started_vm_ips:
             self.stop(started_vm_ips)
-            msg = 'VM {0} start failed'.format(vm_ip)
+            msg = 'Rollback vms {0}'.format(started_vm_ips)
             print(msg)
             raise SeagullException(9999, msg)
         else:
