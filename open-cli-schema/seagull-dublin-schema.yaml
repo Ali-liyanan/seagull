@@ -73,7 +73,7 @@ parameters:
 results:
   direction: portrait
   attributes:
-    - name: file_name
+    - name: data
       description: test case result
       scope: short
       type: string
