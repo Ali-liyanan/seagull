@@ -60,14 +60,14 @@ parameters:
   - name: protocol
     description: string for protocol
     type: string
-    short_option: B
+    short_option: E
     default_value: diameter
     long_option: protocol
     is_optional: false
   - name: mode
     description: string for mode
     type: string
-    short_option: B
+    short_option: F
     long_option: mode
     is_optional: false
 results:
