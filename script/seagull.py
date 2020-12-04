@@ -27,9 +27,9 @@ import requests
 SEAGULL_CLIENT_DEFAULT_PORT = 9000
 SEAGULL_SERVER_DEFAULT_PORT = 9100
 
-SEAGULL_CLIENT_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_client.ksh {1}:' + \
+SEAGULL_CLIENT_CMD = r'cd /opt/seagull/data/{0}-env/run && sudo ./start_client.ksh {1}:' + \
                      str(SEAGULL_CLIENT_DEFAULT_PORT)
-SEAGULL_SERVER_CMD = 'cd /opt/seagull/data/{0}-env/run && sudo ./start_server.ksh {1}:' + \
+SEAGULL_SERVER_CMD = r'cd /opt/seagull/data/{0}-env/run && sudo ./start_server.ksh {1}:' + \
                      str(SEAGULL_SERVER_DEFAULT_PORT)
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | grep client-protocol-stat.%s " + \
