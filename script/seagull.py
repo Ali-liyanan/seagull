@@ -331,7 +331,10 @@ if __name__ == '__main__':
     conf = {}
     with open(args.config_file_path) as json_file:
         json_conf = json.load(json_file)
-        # 获取json数据
+        for ip_account in json_conf['instrument']:
+            instrument_mgs = ip_account['instrument_mgs']
+            conf[instrument_mgs['mnt_address']]['username'] = ip_account[instrument_mgs]['username']
+            conf[instrument_mgs['mnt_address']]['password'] = ip_account[instrument_mgs]['password']
 
     output = {"data": None}
     try:
