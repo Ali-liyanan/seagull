@@ -20,7 +20,6 @@
 import argparse
 import json
 import random
-from time import sleep
 
 import paramiko
 import requests
