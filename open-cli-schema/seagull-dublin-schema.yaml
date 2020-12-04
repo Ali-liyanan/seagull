@@ -79,7 +79,7 @@ results:
       type: string
 cmd:
   command:
-    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json}  --conf ${config-path}
+    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-path}
   success_codes:
     - 0
   working_directory: .
