@@ -100,7 +100,7 @@ class Seagull(object):
     def __repr__(self):
         return str(self)
 
-    def set(self, protocol):
+    def set_config(self, protocol):
         try:
             client_cmd = SEAGULL_CLIENT_CONFIG_CMD.format(protocol)
             server_cmd = SEAGULL_SERVER_CONFIG_CMD.format(protocol)
@@ -306,10 +306,10 @@ class SeagullTask(object):
             result['client']['failed_calls'] = result['client']['incoming_calls'] - result['client']['outgoing_calls']
         return result
 
-    def __set(self, vm_ips, test_caps, test_times):
+    def __set_config(self, vm_ips, test_caps, test_times):
         for vm_ip, cap in zip(vm_ips, test_caps):
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set(self.protocol)
+            seagull.set_config(self.protocol)
         return {}
 
     def __check(self, vm_ips):
@@ -331,13 +331,12 @@ if __name__ == '__main__':
     parser.add_argument('--test-times', action='store', dest='test_times', help='Test times for seagull case')
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
     parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
-    parser.add_argument('--mode', action='store', dest='mode', help='Supports 6 mode.' \
-                                                                    '\nset - Set the instrument for seagull' \
+    parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
                                                                     '\nstart - Start task' \
                                                                     '\npause - Pause task' \
                                                                     '\nstop - Stop task' \
                                                                     '\ndump - Dump real-time counters of each Seagull VM',
-                        choices=('set', 'start', 'pause', 'stop', 'dump'))
+                        choices=('start', 'pause', 'stop', 'dump'))
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
@@ -360,9 +359,7 @@ if __name__ == '__main__':
     output = {"data": None}
     try:
         task = SeagullTask(protocol, conf, instrument)
-        if mode == 'set':
-            output["data"] = task.set(vm_ips, test_caps, test_times)
-        elif mode == 'start':
+        if mode == 'start':
             output["data"] = task.start(vm_ips)
         elif mode == 'pause':
             output["data"] = task.pause(vm_ips)
