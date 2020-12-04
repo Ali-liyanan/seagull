@@ -1,0 +1,88 @@
+# Copyright (c) 2020, CMCC Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+open_cli_schema_version: 1.0
+name: seagull-validation
+description: |
+  Set Onap Common configurations
+
+  example：
+  oclip --product onap-dublin seagull-validation --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
+
+info:
+  product: onap-dublin
+  service: vnf-validation
+  author: ONAP VTP Team
+
+parameters:
+  - name: config-path
+    description: Configuration path
+    type: string
+    short_option: x
+    long_option: config-path
+    default_value: $s{env:OPEN_CLI_HOME}
+    is_optional: true
+  - name: vm-ips
+    description: string for vm-ips
+    type: string
+    short_option: A
+    long_option: vm-ips
+    is_optional: false
+  - name: caps
+    description: string for caps
+    type: string
+    short_option: B
+    long_option: caps
+    is_optional: false
+  - name: test-times
+    description: string for test-times
+    type: string
+    short_option: C
+    long_option: test-times
+    is_optional: false
+  - name: instrument
+    description: string for instrument
+    type: string
+    short_option: D
+    long_option: instrument
+    is_optional: false
+  - name: protocol
+    description: string for protocol
+    type: string
+    short_option: B
+    long_option: protocol
+    is_optional: false
+  - name: mode
+    description: string for mode
+    type: string
+    short_option: B
+    long_option: mode
+    is_optional: false
+results:
+  direction: portrait
+  attributes:
+    - name: file_name
+      description: test case result
+      scope: short
+      type: string
+cmd:
+  command:
+    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json}  --conf ${config-path}
+  success_codes:
+    - 0
+  working_directory: .
+  output: $s{tmp:result.json}
+  result_map:
+    file_name: $o{$.data}
+

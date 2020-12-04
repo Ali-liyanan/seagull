@@ -245,28 +245,28 @@ class SeagullTask(object):
             print(msg)
             raise SeagullException(9999, msg)
         else:
+            # wait the seagull stop, if anyone is stop then exit the while
             while True:
                 seagull = Seagull(Linux(random.choice(vm_ips)))
                 response = seagull.dump(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
                 if response.status_code != 200:
                     break
 
-            result['data'] = self.download(vm_ips)
-            return result
+        return self.download(vm_ips)
 
     def pause(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             seagull.pause(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.pause(SEAGULL_SERVER_DEFAULT_PORT)
-        return
+        return {}
 
     def stop(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             seagull.stop(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.stop(SEAGULL_SERVER_DEFAULT_PORT)
-        return
+        return {}
 
     def download(self, vm_ips):
         result = {'client': {'call_rate': 0, 'elapsed_time': None, 'outgoing_calls': 0},
@@ -274,10 +274,17 @@ class SeagullTask(object):
                   'failed_calls': 0}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            out = seagull.download(self.protocol)
-            if out:
-                result['key1'] += out[0]
-                result['key2'] += out[1]
+            out_client = seagull.download_client(self.protocol)
+            if out_client:
+                result['client']['call_rate'] += out_client[0]
+                result['client']['outgoing_calls'] += out_client[1]
+                result['client']['elapsed_time'] = out_client[2]
+
+            out_server = seagull.download_client(self.protocol)
+            if out_server:
+                result['client']['incoming_calls'] += out_server[0]
+
+            result['client']['failed_calls'] = result['client']['incoming_calls'] - result['client']['outgoing_calls']
         return result
 
     def dump(self, vm_ips):
@@ -292,56 +299,58 @@ class SeagullTask(object):
 
 
 if __name__ == '__main__':
-    seagull = Seagull(Linux('192.168.245.136', 'cmcc', 'cmcc123'))
-    print(seagull.download('diameter', 'client'))
+    # seagull = Seagull(Linux('192.168.245.136', 'cmcc', 'cmcc123'))
+    # print(seagull.download('diameter', 'client'))
 
-    # parser = argparse.ArgumentParser(description="Seagull Task Controller",
-    #                                  formatter_class=argparse.RawTextHelpFormatter)
-    # parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
-    # parser.add_argument('--vm-ips', nargs='+', action='store', dest='vm_ips', help='VM IPs for seagull')
-    # parser.add_argument('--caps', nargs='+', action='store', dest='test_caps', help='Caps for seagull case')
-    # parser.add_argument('--test-times', action='store', dest='test_times', help='Test times for seagull case')
-    # parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
-    # parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
-    # parser.add_argument('--mode', action='store', dest='mode', help='Supports 6 mode.' \
-    #                                                                 '\nset - Set the instrument for seagull' \
-    #                                                                 '\nstart - Start task' \
-    #                                                                 '\npause - Pause task' \
-    #                                                                 '\nstop - Stop task' \
-    #                                                                 '\ndump - Dump real-time counters of each Seagull VM',
-    #                     choices=('set', 'start', 'pause', 'stop', 'dump'))
-    # parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
-    # args = parser.parse_args()
-    #
-    # vm_ips = args.vm_ips
-    # test_caps = args.test_caps
-    # test_times = args.test_times
-    # instrument = args.instrument
-    # mode = args.mode if args.mode else 'dump'
-    # protocol = args.protocol if args.protocol else 'diameter'
-    # result_file = args.result if args.result else None
-    #
-    # conf = {}
-    # with open(args.config_file_path) as json_file:
-    #     json_conf = json.load(json_file)
-    #
-    # try:
-    #     task = SeagullTask(protocol, conf, instrument)
-    #     if mode == 'set':
-    #         out = task.set(vm_ips, test_caps, test_times)
-    #     elif mode == 'start':
-    #         out = task.start(vm_ips)
-    #     elif mode == 'pause':
-    #         out = task.pause(vm_ips)
-    #     elif mode == 'stop':
-    #         out = task.stop(vm_ips)
-    #     elif mode == 'dump':
-    #         out = task.dump(vm_ips)
-    #
-    #     print('Done')
-    # finally:
-    #     seagull_result = json.dumps(out, default=lambda x: x.__dict__)
-    #     print(seagull_result)
-    #     if result_file:
-    #         with open(result_file, "w+") as f:
-    #             f.write(seagull_result)
+    parser = argparse.ArgumentParser(description="Seagull Task Controller",
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
+    parser.add_argument('--vm-ips', nargs='+', action='store', dest='vm_ips', help='VM IPs for seagull')
+    parser.add_argument('--caps', nargs='+', action='store', dest='test_caps', help='Caps for seagull case')
+    parser.add_argument('--test-times', action='store', dest='test_times', help='Test times for seagull case')
+    parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
+    parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
+    parser.add_argument('--mode', action='store', dest='mode', help='Supports 6 mode.' \
+                                                                    '\nset - Set the instrument for seagull' \
+                                                                    '\nstart - Start task' \
+                                                                    '\npause - Pause task' \
+                                                                    '\nstop - Stop task' \
+                                                                    '\ndump - Dump real-time counters of each Seagull VM',
+                        choices=('set', 'start', 'pause', 'stop', 'dump'))
+    parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
+    args = parser.parse_args()
+
+    vm_ips = args.vm_ips
+    test_caps = args.test_caps
+    test_times = args.test_times
+    instrument = args.instrument
+    mode = args.mode if args.mode else 'dump'
+    protocol = args.protocol if args.protocol else 'diameter'
+    result_file = args.result if args.result else None
+
+    conf = {}
+    with open(args.config_file_path) as json_file:
+        json_conf = json.load(json_file)
+        # 获取json数据
+
+    output = {"data": None}
+    try:
+        task = SeagullTask(protocol, conf, instrument)
+        if mode == 'set':
+            output["data"] = task.set(vm_ips, test_caps, test_times)
+        elif mode == 'start':
+            output["data"] = task.start(vm_ips)
+        elif mode == 'pause':
+            output["data"] = task.pause(vm_ips)
+        elif mode == 'stop':
+            output["data"] = task.stop(vm_ips)
+        elif mode == 'dump':
+            output["data"] = task.dump(vm_ips)
+
+        print('Done')
+    finally:
+        seagull_result = json.dumps(output, default=lambda x: x.__dict__)
+        print(seagull_result)
+        if result_file:
+            with open(result_file, "w+") as f:
+                f.write(seagull_result)
