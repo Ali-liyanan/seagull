@@ -220,7 +220,6 @@ class Seagull(object):
 
 
 class SeagullTask(object):
-
     def __init__(self, protocol, conf, instrument):
         self.protocol = protocol
         self.conf = conf or {}
