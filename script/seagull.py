@@ -94,14 +94,14 @@ class Seagull(object):
             client_out, client_err = self.linux.send(client_cmd)
             server_out, server_err = self.linux.send(server_cmd)
             if (not client_err) or (not server_err):
-                raise SeagullException(500, 'start seagull failed')
+                raise SeagullException(9999, 'Start VM {0} failed'.format(self.linux.ip))
         except Exception as e1:
-            print(e1)
+            print(str(e1))
             raise e1
         finally:
             self.linux.close()
 
-    def download(self, protocol, mode='client'):
+    def download_client(self, protocol):
         """
         :param protocol:
         :param mode: client or server
@@ -109,18 +109,35 @@ class Seagull(object):
         """
         try:
             self.linux.connect()
-            if mode == 'client':
-                file_cmd = SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol)
-                out, err = self.linux.send(file_cmd)
-                filter_cmd = SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out)
-            else:
-                file_cmd = SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol)
-                out, err = self.linux.send(file_cmd)
-                filter_cmd = SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out)
+            file_cmd = SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol)
+            out, err = self.linux.send(file_cmd)
+            filter_cmd = SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out)
             out = self.linux.send(filter_cmd)
             return out[0].split(';') if out[0] else None
         except Exception as e1:
-            print('download {0}:{1}:{2} failed'.format(self.linux.ip, protocol, mode))
+            msg = 'download_client {0}:{1} failed'.format(self.linux.ip, protocol)
+            print(msg)
+            raise SeagullException(9999, msg)
+        finally:
+            self.linux.close()
+
+    def download_server(self, protocol):
+        """
+        :param protocol:
+        :param mode: client or server
+        :return:
+        """
+        try:
+            self.linux.connect()
+            file_cmd = SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol)
+            out, err = self.linux.send(file_cmd)
+            filter_cmd = SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out)
+            out = self.linux.send(filter_cmd)
+            return out[0].split(';') if out[0] else None
+        except Exception as e1:
+            msg = 'download_server {0}:{1} failed'.format(self.linux.ip, protocol)
+            print(msg)
+            raise SeagullException(9999, msg)
         finally:
             self.linux.close()
 
@@ -129,14 +146,18 @@ class Seagull(object):
             url = "http://{0}:{1}/seagull/counters/all".format(self.linux.ip, control_port)
             return requests.get(url)
         except Exception as e1:
-            print('dump' + url + ' failed')
+            msg = 'dump' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
     def set_rate(self, control_port, value):
         try:
             url = "http://{0}:{1}/seagull/command/rate?value={3}".format(self.linux.ip, control_port, value)
             requests.put(url)
         except Exception as e1:
-            print('set_rate' + url + ' failed')
+            msg = 'set_rate' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
     def ramp(self, control_port, value, duration):
         try:
@@ -144,21 +165,27 @@ class Seagull(object):
                                                                                       value, duration)
             requests.put(url)
         except Exception as e1:
-            print('ramp' + url + ' failed')
+            msg = 'ramp' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
     def stop(self, control_port):
         try:
             url = "http://{0}:{1}/seagull/command/stop".format(self.linux.ip, control_port)
             requests.put(url)
         except Exception as e1:
-            print('stop' + url + ' failed')
+            msg = 'stop' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
     def pause(self, control_port):
         try:
             url = "http://{0}:{1}/seagull/command/pause".format(self.linux.ip, control_port)
             requests.put(url)
         except Exception as e1:
-            print('pause' + url + ' failed')
+            msg = 'pause' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
     def burst(self, control_port):
         """
@@ -168,7 +195,9 @@ class Seagull(object):
             url = "http://{0}:{1}/seagull/command/burst".format(self.linux.ip, control_port)
             requests.put(url)
         except Exception as e1:
-            print('burst' + url + ' failed')
+            msg = 'burst' + url + ' failed'
+            print(msg)
+            raise SeagullException(9999, msg)
 
 
 class SeagullTask(object):
@@ -192,29 +221,29 @@ class SeagullTask(object):
 
     def start(self, vm_ips):
         # 1、check vm status
-        result = {'code': 200, 'message': 'ok'}
         check_ip = self.check(vm_ips)
         if check_ip:
-            result['code'] = 500
-            result['data'] = check_ip
-            return result
+            msg = 'VM {0} is running'.format(check_ip)
+            print(msg)
+            raise SeagullException(9999, msg)
 
-        # 2、start vm 
-        rollback_vm_ips = []
+        # 2、start vm
+        started_vm_ips = []
         for vm_ip in vm_ips:
             try:
                 seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
                 seagull.send(self.protocol)
+                started_vm_ips.append(vm_ip)
             except SeagullException as e1:
-                rollback_vm_ips.append(vm_ip)
                 print(e1)
+                break
 
         # 3、rollback vm or return the execute result 
-        if not rollback_vm_ips:
-            self.stop(rollback_vm_ips)
-            result['code'] = 500
-            result['data'] = 'VM start failed'
-            return result
+        if not started_vm_ips:
+            self.stop(started_vm_ips)
+            msg = 'VM {0} start failed'.format(vm_ip)
+            print(msg)
+            raise SeagullException(9999, msg)
         else:
             while True:
                 seagull = Seagull(Linux(random.choice(vm_ips)))
@@ -240,7 +269,9 @@ class SeagullTask(object):
         return
 
     def download(self, vm_ips):
-        result = {'key1': 0, 'key2': 0}
+        result = {'client': {'call_rate': 0, 'elapsed_time': None, 'outgoing_calls': 0},
+                  'server': {'incoming_calls': 0},
+                  'failed_calls': 0}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
             out = seagull.download(self.protocol)
