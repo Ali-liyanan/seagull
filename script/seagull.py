@@ -20,6 +20,7 @@
 import argparse
 import json
 import random
+from time import sleep
 
 import paramiko
 import requests
@@ -28,9 +29,9 @@ SEAGULL_CLIENT_DEFAULT_PORT = 9000
 SEAGULL_SERVER_DEFAULT_PORT = 9100
 
 SEAGULL_CLIENT_CMD = r'cd /opt/seagull/data/{0}-env/run && sudo ./start_client.ksh {1}:' + \
-                     str(SEAGULL_CLIENT_DEFAULT_PORT)
+                     str(SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
 SEAGULL_SERVER_CMD = r'cd /opt/seagull/data/{0}-env/run && sudo ./start_server.ksh {1}:' + \
-                     str(SEAGULL_SERVER_DEFAULT_PORT)
+                     str(SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | grep client-protocol-stat.%s " + \
                                  "| head -n 1 |awk '{print $9}'"
@@ -85,14 +86,15 @@ class Linux(object):
     def close(self):
         self.ssh_client.close()
 
-    def send(self, cmd):
+    def send_invoke_shell_ack(self, cmd):
         self.connect()
-        try:
-            stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
-        except Exception as e1:
-            print(e1)
-        finally:
-            self.close()
+        result = ''
+        remote_connect = self.ssh_client.invoke_shell()
+        remote_connect.send(cmd + '\r')
+        while True:
+            sleep(0.5)
+            result += remote_connect.recv(65535).decode('utf-8')
+            return result
 
     def send_ack(self, cmd):
         self.connect()
@@ -119,20 +121,22 @@ class Seagull(object):
         try:
             client_cmd = SEAGULL_CLIENT_CONFIG_CMD.format(protocol)
             server_cmd = SEAGULL_SERVER_CONFIG_CMD.format(protocol)
-            client_out, client_err = self.linux.send(client_cmd)
-            server_out, server_err = self.linux.send(server_cmd)
+            client_out, client_err = self.linux.send_ack(client_cmd)
+            server_out, server_err = self.linux.send_ack(server_cmd)
             if (not client_err) or (not server_err):
                 raise SeagullException(9999, 'Set VM {0} config failed'.format(self.linux.ip))
         except Exception as e1:
             print(str(e1))
 
-
     def start(self, protocol):
         try:
             client_cmd = SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip)
             server_cmd = SEAGULL_SERVER_CMD.format(protocol, self.linux.ip)
-            self.linux.send(client_cmd)
-            self.linux.send(server_cmd)
+            client_out = self.linux.send_invoke_shell_ack(client_cmd)
+            server_out = self.linux.send_invoke_shell_ack(server_cmd)
+            if client_out.rfind('Address already in use') != -1 or server_out.rfind('Address already in use') != -1:
+                raise SeagullException(9999, 'Start VM {0} failed'.format(self.linux.ip))
+
         except Exception as e1:
             print(str(e1))
             raise e1
