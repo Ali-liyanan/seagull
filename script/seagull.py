@@ -87,6 +87,7 @@ class Linux(object):
         self.ssh_client.close()
 
     def send_invoke_shell_ack(self, cmd):
+        print('send_invoke_shell_ack cmd: {0}'.format(cmd))
         self.connect()
         result = ''
         remote_connect = self.ssh_client.invoke_shell()
@@ -97,6 +98,7 @@ class Linux(object):
             return result
 
     def send_ack(self, cmd):
+        print('send_ack cmd: {0}'.format(cmd))
         self.connect()
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
@@ -119,10 +121,8 @@ class Seagull(object):
 
     def set_config(self, protocol):
         try:
-            client_cmd = SEAGULL_CLIENT_CONFIG_CMD.format(protocol)
-            server_cmd = SEAGULL_SERVER_CONFIG_CMD.format(protocol)
-            client_out, client_err = self.linux.send_ack(client_cmd)
-            server_out, server_err = self.linux.send_ack(server_cmd)
+            client_out, client_err = self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CMD.format(protocol))
+            server_out, server_err = self.linux.send_ack(SEAGULL_SERVER_CONFIG_CMD.format(protocol))
             if (not client_err) or (not server_err):
                 raise SeagullException(9999, 'Set VM {0} config failed'.format(self.linux.ip))
         except Exception as e1:
@@ -130,23 +130,16 @@ class Seagull(object):
 
     def start(self, protocol):
         try:
-            client_cmd = SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip)
-            server_cmd = SEAGULL_SERVER_CMD.format(protocol, self.linux.ip)
-            client_out = self.linux.send_invoke_shell_ack(client_cmd)
-            server_out = self.linux.send_invoke_shell_ack(server_cmd)
-            if client_out.rfind('Address already in use') != -1 or server_out.rfind('Address already in use') != -1:
-                raise SeagullException(9999, 'Start VM {0} failed'.format(self.linux.ip))
-
+            self.linux.send_invoke_shell_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
+            self.linux.send_invoke_shell_ack(SEAGULL_SERVER_CMD.format(protocol, self.linux.ip))
         except Exception as e1:
             print(str(e1))
             raise e1
 
     def download_client(self, protocol):
         try:
-            file_cmd = SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol)
-            out, err = self.linux.send_ack(file_cmd)
-            filter_cmd = SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out)
-            out = self.linux.send_ack(filter_cmd)
+            out, err = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol))
+            out = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
             msg = 'download_client {0}:{1} failed'.format(self.linux.ip, protocol)
@@ -155,10 +148,8 @@ class Seagull(object):
 
     def download_server(self, protocol):
         try:
-            file_cmd = SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol)
-            out, err = self.linux.send_ack(file_cmd)
-            filter_cmd = SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out)
-            out = self.linux.send_ack(filter_cmd)
+            out, err = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol))
+            out = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
             msg = 'download_server {0}:{1} failed'.format(self.linux.ip, protocol)
