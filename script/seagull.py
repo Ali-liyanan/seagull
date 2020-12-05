@@ -137,8 +137,8 @@ class Seagull(object):
 
     def start(self, protocol):
         try:
-            self.linux.send_invoke_shell_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
             self.linux.send_invoke_shell_ack(SEAGULL_SERVER_CMD.format(protocol, self.linux.ip))
+            self.linux.send_invoke_shell_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
         except Exception as e1:
             msg = 'start vm {0} failed'.format(self.linux.ip)
             print(msg)
