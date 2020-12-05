@@ -279,8 +279,12 @@ class SeagullTask(object):
             # wait the seagull stop, if anyone is stop then exit the while
             while True:
                 try:
+                    sleep(5)
+                    print('Check seagull status every 5 seconds')
                     seagull = Seagull(Linux(random.choice(vm_ips)))
-                    seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
+                    rsp = seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
+                    if not rsp:
+                        break
                 except Exception as e1:
                     print('Seagull vms is stoped')
                     break
@@ -292,14 +296,14 @@ class SeagullTask(object):
             seagull = Seagull(Linux(vm_ip))
             seagull.pause(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.pause(SEAGULL_SERVER_DEFAULT_PORT)
-        return {}
+        return "Success"
 
     def stop(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             seagull.stop(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.stop(SEAGULL_SERVER_DEFAULT_PORT)
-        return {}
+        return "Success"
 
     def dump(self, vm_ips):
         counters = {}
@@ -328,8 +332,8 @@ class SeagullTask(object):
                 result['client']['elapsed_time'] = out_client[0]
 
             out_server = seagull.download_server(self.protocol)
-            if out_server:
-                result['client']['incoming_calls'] += out_server[0]
+            # if out_server:
+            #     result['client']['incoming_calls'] += out_server[0]
 
             result['failed_calls'] = result['client']['outgoing_calls'] - result['server']['incoming_calls']
         return result
@@ -383,17 +387,17 @@ if __name__ == '__main__':
             account = {'username': instrument_mgs['username'], 'password': instrument_mgs['password']}
             conf[instrument_mgs['mnt_address']] = account
 
-    output = {"data": None}
+    output = {}
     try:
         task = SeagullTask(protocol, conf, instrument, test_caps, test_times)
         if mode == 'start':
-            output.update("data", task.start(vm_ips))
+            output['data'] = task.start(vm_ips)
         elif mode == 'pause':
-            output.update("data", task.pause(vm_ips))
+            output['data'] = task.pause(vm_ips)
         elif mode == 'stop':
-            output.update("data", task.stop(vm_ips))
+            output['data'] = task.stop(vm_ips)
         elif mode == 'dump':
-            output.update("data", task.dump(vm_ips))
+            output['data'] = task.dump(vm_ips)
 
         print('Done')
     finally:
