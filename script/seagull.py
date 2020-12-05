@@ -377,13 +377,13 @@ if __name__ == '__main__':
     try:
         task = SeagullTask(protocol, conf, instrument)
         if mode == 'start':
-            output["data"] = task.start(vm_ips)
+            output.update("data", task.start(vm_ips))
         elif mode == 'pause':
-            output["data"] = task.pause(vm_ips)
+            output.update("data", task.pause(vm_ips))
         elif mode == 'stop':
-            output["data"] = task.stop(vm_ips)
+            output.update("data", task.stop(vm_ips))
         elif mode == 'dump':
-            output["data"] = task.dump(vm_ips)
+            output.update("data", task.dump(vm_ips))
 
         print('Done')
     finally:
