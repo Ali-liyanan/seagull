@@ -280,7 +280,7 @@ class SeagullTask(object):
             while True:
                 try:
                     seagull = Seagull(Linux(random.choice(vm_ips)))
-                    seagull.dump(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
+                    seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
                 except Exception as e1:
                     print('Seagull vms is stoped')
                     break
