@@ -101,13 +101,18 @@ class Linux(object):
     def send_invoke_shell_ack(self, cmd):
         self.connect()
         logging.info('send_invoke_shell_ack cmd: {0}'.format(cmd))
-        result = ''
-        remote_connect = self.ssh_client.invoke_shell()
-        remote_connect.send(cmd + '\r')
-        while True:
-            sleep(0.5)
-            result += remote_connect.recv(65535).decode('utf-8')
-            return result
+        try:
+            result = ''
+            remote_connect = self.ssh_client.invoke_shell()
+            remote_connect.send(cmd + '\r')
+            while True:
+                sleep(0.5)
+                result += remote_connect.recv(65535).decode('utf-8')
+                return result
+        except Exception as e1:
+            logging.error(e1)
+        finally:
+            self.close()
 
     def send_ack(self, cmd):
         self.connect()
