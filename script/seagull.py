@@ -93,8 +93,8 @@ class Linux(object):
         self.ssh_client.close()
 
     def send_invoke_shell_ack(self, cmd):
-        print('send_invoke_shell_ack cmd: {0}'.format(cmd))
         self.connect()
+        print('send_invoke_shell_ack cmd: {0}'.format(cmd))
         result = ''
         remote_connect = self.ssh_client.invoke_shell()
         remote_connect.send(cmd + '\r')
@@ -104,8 +104,8 @@ class Linux(object):
             return result
 
     def send_ack(self, cmd):
-        print('send_ack cmd: {0}'.format(cmd))
         self.connect()
+        print('send_ack cmd: {0}'.format(cmd))
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
             return stdout.read().decode('utf-8').strip(), stderr.read().decode('utf-8').strip()
