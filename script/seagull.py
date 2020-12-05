@@ -41,8 +41,14 @@ SEAGULL_SERVER_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | g
                                  "| head -n 1 |awk '{print $9}'"
 SEAGULL_SERVER_RESULT_FILTER_CMD = r"sudo cat /opt/seagull/data/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 1,2"
 
-SEAGULL_CLIENT_CONFIG_CMD = ''
-SEAGULL_SERVER_CONFIG_CMD = ''
+SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sed -n 's/dest=.*;buffer=/dest={0};buffer=/g'" + \
+                                 "/opt/seagull/data/{1}-env/config/conf.client.xml"
+SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sed -n 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g'" + \
+                                 "/opt/seagull/data/{1}-env/config/conf.client.xml"
+SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sed -n 's/<start-timer>.*</start-timer>/<start-timer>{0}</start-timer>/g'" + \
+                                  "/opt/seagull/data/{1}-env/scenario/sar-saa.client.xml" + \
+                                  " && sed -n 's/<stop-timer>.*</stop-timer>/<stop-timer>{2}</stop-timer>/g'" + \
+                                  "/opt/seagull/data/{3}-env/scenario/sar-saa.client.xml"
 
 
 class SeagullException(Exception):
@@ -119,21 +125,23 @@ class Seagull(object):
     def __repr__(self):
         return str(self)
 
-    def set_config(self, protocol):
+    def set_config(self, protocol, instrument, test_caps, test_times):
         try:
-            client_out, client_err = self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CMD.format(protocol))
-            server_out, server_err = self.linux.send_ack(SEAGULL_SERVER_CONFIG_CMD.format(protocol))
-            if (not client_err) or (not server_err):
-                raise SeagullException(9999, 'Set VM {0} config failed'.format(self.linux.ip))
+            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_PORT_CMD.format(instrument, protocol))
+            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(test_caps, protocol))
+            self.linux.send_ack(SEAGULL_SERVER_CONFIG_TIMES_CMD.format(test_times, protocol, test_times, protocol))
         except Exception as e1:
-            print(str(e1))
+            msg = 'set_config vm {0} failed'.format(self.linux.ip)
+            print(msg)
+            raise e1
 
     def start(self, protocol):
         try:
             self.linux.send_invoke_shell_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
             self.linux.send_invoke_shell_ack(SEAGULL_SERVER_CMD.format(protocol, self.linux.ip))
         except Exception as e1:
-            print(str(e1))
+            msg = 'start vm {0} failed'.format(self.linux.ip)
+            print(msg)
             raise e1
 
     def download_client(self, protocol):
@@ -232,10 +240,12 @@ class Seagull(object):
 
 
 class SeagullTask(object):
-    def __init__(self, protocol, conf, instrument):
+    def __init__(self, protocol, conf, instrument, test_caps, test_times):
         self.protocol = protocol
         self.conf = conf or {}
         self.instrument = instrument
+        self.test_caps = test_caps
+        self.test_times = test_times
 
     def start(self, vm_ips):
         # 1、check vm status
@@ -324,10 +334,10 @@ class SeagullTask(object):
             result['failed_calls'] = result['client']['outgoing_calls'] - result['server']['incoming_calls']
         return result
 
-    def __set_config(self, vm_ips, test_caps, test_times):
+    def __set_config(self, vm_ips):
         for vm_ip, cap in zip(vm_ips, test_caps):
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set_config(self.protocol)
+            seagull.set_config(self.protocol, self.instrument, self.test_caps, self.test_times)
         return {}
 
     def __check(self, vm_ips):
@@ -375,7 +385,7 @@ if __name__ == '__main__':
 
     output = {"data": None}
     try:
-        task = SeagullTask(protocol, conf, instrument)
+        task = SeagullTask(protocol, conf, instrument, test_caps, test_times)
         if mode == 'start':
             output.update("data", task.start(vm_ips))
         elif mode == 'pause':
