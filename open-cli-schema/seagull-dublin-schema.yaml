@@ -18,7 +18,7 @@ description: |
   Set Onap Common configurations
 
   example：
-  oclip --product onap-dublin seagull-validation --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
+  oclip --product onap-dublin seagull-validation --config-file '' --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
 
 info:
   product: onap-dublin
@@ -26,13 +26,12 @@ info:
   author: ONAP VTP Team
 
 parameters:
-  - name: config-path
-    description: Configuration path
+  - name: config-file
+    description: Configuration file
     type: string
     short_option: x
-    long_option: config-path
-    default_value: $s{env:OPEN_CLI_HOME}
-    is_optional: true
+    long_option: config-file
+    is_optional: false
   - name: vm-ips
     description: string for vm-ips
     type: string
@@ -79,7 +78,7 @@ results:
       type: string
 cmd:
   command:
-    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-path}
+    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf $s{env:OPEN_CLI_HOME}/conf/${config-file}
   success_codes:
     - 0
   working_directory: .
