@@ -42,8 +42,8 @@ SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%
 
 SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
-SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/<start-timer>.*</start-timer>/<start-timer>{0}</start-timer>/g' " + SEAGULL_HOME + r"/{1}-env/scenario/sar-saa.client.xml" + \
-                                  r" && sudo sed 's/<stop-timer>.*</stop-timer>/<stop-timer>{2}</stop-timer>/g' " + SEAGULL_HOME + r"/{3}-env/scenario/sar-saa.client.xml"
+SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/<start-timer>.*</start-timer>/<start-timer>{0}</start-timer>/g' " + SEAGULL_HOME + r"/{1}-env/scenario/sar-saa.client.xml  && " + \
+                                  r"sudo sed 's/<stop-timer>.*</stop-timer>/<stop-timer>{2}</stop-timer>/g' " + SEAGULL_HOME + r"/{3}-env/scenario/sar-saa.client.xml"
 
 # fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
 fs = logging.StreamHandler()  # 将日志输出到控制台
