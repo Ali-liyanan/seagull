@@ -245,11 +245,7 @@ class SeagullTask(object):
 
     def start(self, vm_ips):
         # 1、check vm status
-        check_ip = self.__check(vm_ips)
-        if check_ip:
-            msg = 'VM {0} is running'.format(check_ip)
-            logging.error(msg)
-            raise SeagullException(9999, msg)
+        self.__check(vm_ips)
 
         # 2、set vm config
         self.__set_config(vm_ips)
@@ -345,7 +341,9 @@ class SeagullTask(object):
             client_rsp = seagull.status(SEAGULL_CLIENT_DEFAULT_PORT)
             server_rsp = seagull.status(SEAGULL_SERVER_DEFAULT_PORT)
             if client_rsp or server_rsp:
-                return vm_ip
+                msg = 'VM {0} is running'.format(vm_ip)
+                logging.error(msg)
+                raise SeagullException(9999, msg)
 
 
 if __name__ == '__main__':
