@@ -142,16 +142,18 @@ class Seagull(object):
             self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(test_caps, protocol))
             self.linux.send_ack(SEAGULL_SERVER_CONFIG_TIMES_CMD.format(test_times, protocol, test_times, protocol))
         except Exception as e1:
-            logging.error('set_config vm {0} failed'.format(self.linux.ip))
-            raise e1
+            msg = 'set_config vm {0} failed'.format(self.linux.ip)
+            logging.error(msg)
+            raise SeagullException(9999, msg)
 
     def start(self, protocol):
         try:
             self.linux.send_invoke_shell_ack(SEAGULL_SERVER_CMD.format(protocol, self.linux.ip))
             self.linux.send_invoke_shell_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
         except Exception as e1:
-            logging.error('start vm {0} failed'.format(self.linux.ip))
-            raise e1
+            msg = 'start vm {0} failed'.format(self.linux.ip)
+            logging.error(msg)
+            raise SeagullException(9999, msg)
 
     def download_client(self, protocol):
         try:
@@ -311,9 +313,9 @@ class SeagullTask(object):
 
             counter = {'client': None, 'server': None}
             client_rsp = seagull.dump(SEAGULL_CLIENT_DEFAULT_PORT)
-            counter['client'] = client_rsp[1] if client_rsp and client_rsp[0] == 200 else None
+            counter['client'] = client_rsp[1].replace('\r\n', ',') if client_rsp and client_rsp[0] == 200 else None
             server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
-            counter['client'] = server_rsp[1] if server_rsp and server_rsp[0] == 200 else None
+            counter['server'] = server_rsp[1].replace('\r\n', ',') if server_rsp and server_rsp[0] == 200 else None
 
             counters[vm_ip] = counter
         return counters
