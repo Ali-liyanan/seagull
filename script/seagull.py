@@ -42,17 +42,17 @@ SEAGULL_SERVER_RESULT_FILE_CMD = r"sudo ls -lt /opt/seagull/data/%s-env/logs | g
                                  "| head -n 1 |awk '{print $9}'"
 SEAGULL_SERVER_RESULT_FILTER_CMD = r"sudo cat /opt/seagull/data/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 1,2"
 
-SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sed -n 's/dest=.*;buffer=/dest={0};buffer=/g'" + \
+SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g'" + \
                                  "/opt/seagull/data/{1}-env/config/conf.client.xml"
-SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sed -n 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g'" + \
+SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g'" + \
                                  "/opt/seagull/data/{1}-env/config/conf.client.xml"
-SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sed -n 's/<start-timer>.*</start-timer>/<start-timer>{0}</start-timer>/g'" + \
+SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/<start-timer>.*</start-timer>/<start-timer>{0}</start-timer>/g'" + \
                                   "/opt/seagull/data/{1}-env/scenario/sar-saa.client.xml" + \
-                                  " && sed -n 's/<stop-timer>.*</stop-timer>/<stop-timer>{2}</stop-timer>/g'" + \
+                                  " && sudo sed 's/<stop-timer>.*</stop-timer>/<stop-timer>{2}</stop-timer>/g'" + \
                                   "/opt/seagull/data/{3}-env/scenario/sar-saa.client.xml"
 
-# fp = logging.FileHandler('a.txt', encoding='utf-8')   #将日志记录到文件中
-fs = logging.StreamHandler()  # 将日志输出到控制台
+# fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
+fs = logging.StreamHandler()                            # 将日志输出到控制台
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
                     datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
 
