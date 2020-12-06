@@ -23,7 +23,7 @@ description: |
 info:
   product: onap-dublin
   service: vnf-validation
-  author: ONAP VTP Team
+  author: wutuo@chinamobile.com
 
 parameters:
   - name: config-json
