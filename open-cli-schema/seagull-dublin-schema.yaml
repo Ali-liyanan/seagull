@@ -18,7 +18,7 @@ description: |
   Set Onap Common configurations
 
   example：
-  oclip --product onap-dublin seagull-validation --config-file '' --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
+  oclip --product onap-dublin seagull-validation --config-json '' --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
 
 info:
   product: onap-dublin
@@ -26,47 +26,40 @@ info:
   author: ONAP VTP Team
 
 parameters:
-  - name: config-file
+  - name: config-json
     description: Configuration file
     type: string
-    short_option: x
-    long_option: config-file
+    long_option: config-json
     is_optional: false
   - name: vm-ips
     description: string for vm-ips
     type: string
-    short_option: A
     long_option: vm-ips
     is_optional: false
   - name: caps
     description: string for caps
     type: string
-    short_option: B
     long_option: caps
     is_optional: false
   - name: test-times
     description: string for test-times
     type: string
-    short_option: C
     long_option: test-times
     is_optional: false
   - name: instrument
     description: string for instrument
     type: string
-    short_option: D
     long_option: instrument
     is_optional: false
   - name: protocol
     description: string for protocol
     type: string
-    short_option: E
     default_value: diameter
     long_option: protocol
     is_optional: false
   - name: mode
     description: string for mode
     type: string
-    short_option: F
     long_option: mode
     is_optional: false
 results:
@@ -78,7 +71,7 @@ results:
       type: string
 cmd:
   command:
-    -  python3 $s{env:OPEN_CLI_HOME}/script/onap-config.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf $s{env:OPEN_CLI_HOME}/conf/${config-file}
+    -  python3 $s{env:OPEN_CLI_HOME}/script/seagull.py --vm-ips ${vm-ips} --caps ${caps} --test-times ${test-times} --instrument ${instrument} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-json}
   success_codes:
     - 0
   working_directory: .

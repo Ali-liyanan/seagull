@@ -248,7 +248,7 @@ class SeagullTask(object):
         self.__check(vm_ips)
 
         # 2、set vm config
-        self.__set_config(vm_ips)
+        # self.__set_config(vm_ips)
 
         # 3、start vm
         started_vm_ips = []
