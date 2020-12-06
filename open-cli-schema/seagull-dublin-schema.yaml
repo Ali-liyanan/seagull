@@ -15,9 +15,7 @@
 open_cli_schema_version: 1.0
 name: seagull-validation
 description: |
-  Set Onap Common configurations
-
-  example：
+  Example：
   oclip --product onap-dublin seagull-validation --config-json '' --vm-ips '' --caps '' --test-times '' --instrument '' --protocol '' --mode ''
 
 info:
