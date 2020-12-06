@@ -52,7 +52,7 @@ SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/<start-timer>.*</start-timer>/<s
                                   "/opt/seagull/data/{3}-env/scenario/sar-saa.client.xml"
 
 # fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
-fs = logging.StreamHandler()                            # 将日志输出到控制台
+fs = logging.StreamHandler()  # 将日志输出到控制台
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
                     datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
 
@@ -258,6 +258,7 @@ class SeagullTask(object):
             raise SeagullException(9999, msg)
 
         # 2、set vm config
+        self.__set_config(vm_ips)
 
         # 3、start vm
         started_vm_ips = []
@@ -343,7 +344,6 @@ class SeagullTask(object):
         for vm_ip, cap in zip(vm_ips, test_caps):
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
             seagull.set_config(self.protocol, self.instrument, self.test_caps, self.test_times)
-        return {}
 
     def __check(self, vm_ips):
         for vm_ip in vm_ips:
