@@ -35,10 +35,10 @@ SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_clien
 SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_server.ksh {1}:' + str(SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep client-protocol-stat.%s | head -n 1 |awk '{print $9}'"
-SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 4"
+SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,9"
 
 SEAGULL_SERVER_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep server-protocol-stat.%s | head -n 1 |awk '{print $9}'"
-SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 1,2"
+SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 7"
 
 SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
@@ -310,7 +310,7 @@ class SeagullTask(object):
         return counters
 
     def __download(self, vm_ips):
-        result = {'client': {'call_rate': 0, 'elapsed_time': None, 'outgoing_calls': 0},
+        result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},
                   'server': {'incoming_calls': 0},
                   'failed_calls': 0}
         for vm_ip in vm_ips:
@@ -318,14 +318,14 @@ class SeagullTask(object):
             out_client = seagull.download_client(self.protocol)
             if out_client:
                 # result['client']['call_rate'] += out_client[0]
-                # result['client']['outgoing_calls'] += out_client[1]
                 result['client']['elapsed_time'] = out_client[0]
+                result['client']['outgoing_calls'] += out_client[1]
 
             out_server = seagull.download_server(self.protocol)
-            # if out_server:
-            #     result['client']['incoming_calls'] += out_server[0]
+            if out_server:
+                result['server']['incoming_calls'] += out_server[0]
 
-            result['failed_calls'] = result['client']['outgoing_calls'] - result['server']['incoming_calls']
+            result['failed_calls'] = result['server']['incoming_calls'] - result['client']['outgoing_calls']
         return result
 
     def __set_config(self, vm_ips):
