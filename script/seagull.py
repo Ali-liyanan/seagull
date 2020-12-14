@@ -318,14 +318,14 @@ class SeagullTask(object):
             out_client = seagull.download_client(self.protocol)
             if out_client:
                 # result['client']['call_rate'] += out_client[0]
-                result['client']['elapsed_time'] = out_client[0]
+                result['client']['elapsed_time'] += out_client[0]
                 result['client']['outgoing_calls'] += out_client[1]
 
             out_server = seagull.download_server(self.protocol)
             if out_server:
                 result['server']['incoming_calls'] += out_server[0]
 
-            result['failed_calls'] = result['server']['incoming_calls'] - result['client']['outgoing_calls']
+            result['failed_calls'] += (result['server']['incoming_calls'] - result['client']['outgoing_calls'])
         return result
 
     def __set_config(self, vm_ips):
