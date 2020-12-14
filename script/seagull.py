@@ -376,7 +376,7 @@ if __name__ == '__main__':
         for ip_account in json_conf['instrument']:
             instrument_mgs = ip_account['instrument_mgs']
             account = {'username': instrument_mgs['username'], 'password': instrument_mgs['password']}
-            conf[instrument_mgs['mnt_address']] = account
+            conf[instrument_mgs['address']] = account
 
     output = {}
     try:
