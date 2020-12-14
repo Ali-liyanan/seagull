@@ -45,9 +45,8 @@ SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"cal
 SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/name=\"log-stat-period\".*></name=\"log-stat-period\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 
 # fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
-fs = logging.StreamHandler()  # 将日志输出到控制台
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
-                    datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
+fs = logging.StreamHandler()                          # 将日志输出到控制台
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
 
 
 class SeagullException(Exception):
@@ -355,11 +354,11 @@ if __name__ == '__main__':
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
     parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
-                                                                    '\nstart - Start task' \
+                                                                    '\nstarted - Start task' \
                                                                     '\npause - Pause task' \
-                                                                    '\nstop - Stop task' \
+                                                                    '\nstoped - Stop task' \
                                                                     '\ndump - Dump real-time counters of each Seagull VM',
-                        choices=('start', 'pause', 'stop', 'dump'))
+                        choices=('started', 'pause', 'stoped', 'dump'))
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
@@ -382,11 +381,11 @@ if __name__ == '__main__':
     output = {}
     try:
         task = SeagullTask(protocol, conf, instrument, test_caps, test_times)
-        if mode == 'start':
+        if mode == 'started':
             output['data'] = task.start(vm_ips)
         elif mode == 'pause':
             output['data'] = task.pause(vm_ips)
-        elif mode == 'stop':
+        elif mode == 'stoped':
             output['data'] = task.stop(vm_ips)
         elif mode == 'dump':
             output['data'] = task.dump(vm_ips)
