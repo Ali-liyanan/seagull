@@ -319,11 +319,11 @@ class SeagullTask(object):
             if out_client:
                 # result['client']['call_rate'] += out_client[0]
                 result['client']['elapsed_time'] = out_client[0]
-                result['client']['outgoing_calls'] += out_client[1]
+                result['client']['outgoing_calls'] += int(out_client[1])
 
             out_server = seagull.download_server(self.protocol)
             if out_server:
-                result['server']['incoming_calls'] += out_server[0]
+                result['server']['incoming_calls'] += int(out_server[0])
 
             result['failed_calls'] += (result['server']['incoming_calls'] - result['client']['outgoing_calls'])
         return result
