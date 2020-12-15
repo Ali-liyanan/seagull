@@ -345,8 +345,7 @@ class SeagullTask(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Seagull Task Controller",
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description="Seagull Task Controller", formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
     parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
     parser.add_argument('--caps', action='store', dest='test_caps', help='Caps for seagull case')
