@@ -354,11 +354,11 @@ if __name__ == '__main__':
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
     parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
-                                                                    '\nstarted - Start task' \
+                                                                    '\nstart - Start task' \
                                                                     '\npause - Pause task' \
-                                                                    '\nstoped - Stop task' \
+                                                                    '\nstop - Stop task' \
                                                                     '\ndump - Dump real-time counters of each Seagull VM',
-                        choices=('started', 'pause', 'stoped', 'dump'))
+                        choices=('start', 'pause', 'stop', 'dump'))
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
@@ -381,11 +381,11 @@ if __name__ == '__main__':
     output = {}
     try:
         task = SeagullTask(protocol, conf, instrument, test_caps, test_times)
-        if mode == 'started':
+        if mode == 'start':
             output['data'] = task.start(vm_ips)
         elif mode == 'pause':
             output['data'] = task.pause(vm_ips)
-        elif mode == 'stoped':
+        elif mode == 'stop':
             output['data'] = task.stop(vm_ips)
         elif mode == 'dump':
             output['data'] = task.dump(vm_ips)
