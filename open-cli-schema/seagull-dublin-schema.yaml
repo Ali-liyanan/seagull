@@ -30,7 +30,7 @@ parameters:
     long_option: config-json
     is_optional: false
   - name: vm-ips
-    description: string for vm-ips
+    description: string for seagull vm-ips
     type: string
     long_option: vm-ips
     is_optional: false
@@ -45,7 +45,7 @@ parameters:
     long_option: test-times
     is_optional: false
   - name: instrument
-    description: string for instrument
+    description: string for DRA address
     type: string
     long_option: instrument
     is_optional: false
