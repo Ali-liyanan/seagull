@@ -34,11 +34,11 @@ SEAGULL_HOME = '/opt/seagull/data'
 SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_client.ksh {1}:' + str(SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
 SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_server.ksh {1}:' + str(SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
 
-SEAGULL_CLIENT_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep client-protocol-stat.%s | head -n 1 |awk '{print $9}'"
-SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,9"
+SEAGULL_CLIENT_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep client-stat.%s | head -n 1 |awk '{print $9}'"
+SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,11"
 
-SEAGULL_SERVER_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep server-protocol-stat.%s | head -n 1 |awk '{print $9}'"
-SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 7"
+SEAGULL_SERVER_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep server-stat.%s | head -n 1 |awk '{print $9}'"
+SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 9"
 
 SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
@@ -149,7 +149,7 @@ class Seagull(object):
 
     def download_client(self, protocol):
         try:
-            out, err = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILE_CMD % (protocol, protocol))
+            out, err = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILE_CMD % protocol)
             out = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
@@ -158,7 +158,7 @@ class Seagull(object):
 
     def download_server(self, protocol):
         try:
-            out, err = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILE_CMD % (protocol, protocol))
+            out, err = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILE_CMD % protocol)
             out = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
@@ -325,7 +325,7 @@ class SeagullTask(object):
             if out_server:
                 result['server']['incoming_calls'] += int(out_server[0])
 
-            result['failed_calls'] += (result['server']['incoming_calls'] - result['client']['outgoing_calls'])
+            result['failed_calls'] += (result['client']['outgoing_calls'] - result['server']['incoming_calls'])
         return result
 
     def __set_config(self, vm_ips):
