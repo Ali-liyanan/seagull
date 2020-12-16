@@ -43,7 +43,7 @@ parameters:
     description: string for number-calls
     type: string
     long_option: number-calls
-    is_optional: true
+    is_optional: false
   - name: instrument
     description: string for DRA address
     type: string
@@ -54,7 +54,7 @@ parameters:
     type: string
     default_value: diameter
     long_option: protocol
-    is_optional: false
+    is_optional: true
   - name: mode
     description: string for mode
     type: string
