@@ -20,7 +20,7 @@ description: |
 
 info:
   product: onap-dublin
-  service: vnf-validation
+  service: vnf-seagull
   author: wutuo@chinamobile.com
 
 parameters:
