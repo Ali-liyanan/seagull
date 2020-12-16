@@ -43,7 +43,7 @@ parameters:
     description: string for number-calls
     type: string
     long_option: number-calls
-    is_optional: false
+    is_optional: true
   - name: instrument
     description: string for DRA address
     type: string
