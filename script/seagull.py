@@ -42,7 +42,7 @@ SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%
 
 SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
-SEAGULL_SERVER_CONFIG_TIMES_CMD = r"sudo sed 's/name=\"log-stat-period\".*></name=\"log-stat-period\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
+SEAGULL_SERVER_CONFIG_CALLS_CMD = r"sudo sed 's/name=\"number-calls\".*></name=\"number-calls\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 
 # fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
 fs = logging.StreamHandler()                          # 将日志输出到控制台
@@ -128,11 +128,12 @@ class Seagull(object):
     def __repr__(self):
         return str(self)
 
-    def set_config(self, protocol, instrument, test_caps, test_times):
+    def set_config(self, protocol, instrument, caps, number_calls):
         try:
             self.linux.send_ack(SEAGULL_CLIENT_CONFIG_PORT_CMD.format(instrument, protocol))
-            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(test_caps, protocol))
-            self.linux.send_ack(SEAGULL_SERVER_CONFIG_TIMES_CMD.format(test_times, protocol))
+            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(caps, protocol))
+            if number_calls:
+                self.linux.send_ack(SEAGULL_SERVER_CONFIG_CALLS_CMD.format(number_calls, protocol))
         except Exception as e1:
             msg = 'set_config vm {0} failed'.format(self.linux.ip)
             logging.error(msg, e1)
@@ -234,12 +235,12 @@ class Seagull(object):
 
 
 class SeagullTask(object):
-    def __init__(self, protocol, conf, instrument, test_caps, test_times):
+    def __init__(self, protocol, conf, instrument, caps, number_calls):
         self.protocol = protocol
         self.conf = conf or {}
         self.instrument = instrument
-        self.test_caps = test_caps
-        self.test_times = test_times
+        self.caps = caps
+        self.number_calls = number_calls
 
     def start(self, vm_ips):
         # 1、check vm status
@@ -329,9 +330,11 @@ class SeagullTask(object):
         return result
 
     def __set_config(self, vm_ips):
-        for vm_ip, cap in zip(vm_ips, test_caps):
+        for vm_ip, cap in zip(vm_ips, self.caps):
+            if not cap:
+                raise SeagullException(9999, "vm {0} cap {1} is empty".format(vm_ip, cap))
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set_config(self.protocol, self.instrument, self.test_caps, self.test_times)
+            seagull.set_config(self.protocol, self.instrument, self.caps, self.number_calls)
 
     def __check(self, vm_ips):
         for vm_ip in vm_ips:
@@ -348,8 +351,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Seagull Task Controller", formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
     parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
-    parser.add_argument('--caps', action='store', dest='test_caps', help='Caps for seagull case')
-    parser.add_argument('--test-times', action='store', dest='test_times', help='Test times for seagull case')
+    parser.add_argument('--caps', action='store', dest='caps', help='Caps for seagull case')
+    parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number calls for seagull case')
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
     parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
@@ -362,8 +365,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     vm_ips = args.vm_ips.split(';') if args.vm_ips else []
-    test_caps = args.test_caps.split(';') if args.test_caps else []
-    test_times = args.test_times
+    caps = args.caps.split(';') if args.caps else []
+    number_calls = args.number_calls
     instrument = args.instrument
     mode = args.mode if args.mode else 'dump'
     protocol = args.protocol if args.protocol else 'diameter'
@@ -379,7 +382,7 @@ if __name__ == '__main__':
 
     output = {}
     try:
-        task = SeagullTask(protocol, conf, instrument, test_caps, test_times)
+        task = SeagullTask(protocol, conf, instrument, caps, number_calls)
         if mode == 'start':
             output['data'] = task.start(vm_ips)
         elif mode == 'pause':

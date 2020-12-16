@@ -39,10 +39,10 @@ parameters:
     type: string
     long_option: caps
     is_optional: false
-  - name: test-times
-    description: string for test-times
+  - name: number-calls
+    description: string for number-calls
     type: string
-    long_option: test-times
+    long_option: number-calls
     is_optional: false
   - name: instrument
     description: string for DRA address
