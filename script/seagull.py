@@ -129,9 +129,9 @@ class Seagull(object):
     def __repr__(self):
         return str(self)
 
-    def set_config(self, protocol, instrument, caps, number_calls):
+    def set_config(self, protocol, sut_address, caps, number_calls):
         try:
-            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_PORT_CMD.format(instrument, protocol))
+            self.linux.send_ack(SEAGULL_CLIENT_CONFIG_PORT_CMD.format(sut_address, protocol))
             self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(caps, protocol))
             if number_calls:
                 self.linux.send_ack(SEAGULL_SERVER_CONFIG_CALLS_CMD.format(number_calls, protocol))
@@ -236,10 +236,10 @@ class Seagull(object):
 
 
 class SeagullTask(object):
-    def __init__(self, protocol, conf, instrument, caps, number_calls):
+    def __init__(self, protocol, conf, sut_address, caps, number_calls):
         self.protocol = protocol
         self.conf = conf or {}
-        self.instrument = instrument
+        self.sut_address = sut_address
         self.caps = caps
         self.number_calls = number_calls
 
@@ -333,7 +333,7 @@ class SeagullTask(object):
     def __set_config(self, vm_ips):
         for vm_ip, cap in zip(vm_ips, self.caps):
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set_config(self.protocol, self.instrument, self.caps, self.number_calls)
+            seagull.set_config(self.protocol, self.sut_address, self.caps, self.number_calls)
 
     def __check(self, vm_ips):
         for vm_ip in vm_ips:
@@ -353,7 +353,7 @@ if __name__ == '__main__':
     parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
     parser.add_argument('--caps', action='store', dest='caps', help='Call rate of seagull case')
     parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number-calls of seagull case')
-    parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
+    parser.add_argument('--sut-address', action='store', dest='sut_address', help='Sut address for DRA')
     parser.add_argument('--protocol', action='store', dest='protocol', help='Protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
                                                                     '\nstart - Start task' \
@@ -377,7 +377,7 @@ if __name__ == '__main__':
     vm_ips = args.vm_ips.split(';') if args.vm_ips else []
     caps = args.caps.split(';') if args.caps else []
     number_calls = args.number_calls
-    instrument = args.instrument
+    sut_address = args.sut_address
     mode = args.mode if args.mode else 'dump'
     protocol = args.protocol if args.protocol else 'diameter'
     result_file = args.result if args.result else None
@@ -394,7 +394,7 @@ if __name__ == '__main__':
 
     output = {}
     try:
-        task = SeagullTask(protocol, conf, instrument, caps, number_calls)
+        task = SeagullTask(protocol, conf, sut_address, caps, number_calls)
         if mode == 'start':
             output['data'] = task.start(vm_ips)
         elif mode == 'pause':
