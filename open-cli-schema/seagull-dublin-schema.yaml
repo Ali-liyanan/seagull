@@ -16,7 +16,7 @@ open_cli_schema_version: 1.0
 name: seagull-validation
 description: |
   Example：
-  oclip --product onap-dublin seagull-validation --config-json '' --vm-ips '' --caps '' --number-calls '' --sutaddress '' --protocol '' --mode ''
+  oclip --product onap-dublin seagull-validation --config-json '' --instrument-ips '' --caps '' --number-calls '' --sutaddress '' --protocol '' --mode ''
 
 info:
   product: onap-dublin
@@ -29,10 +29,10 @@ parameters:
     type: string
     long_option: config-json
     is_optional: false
-  - name: vm-ips
-    description: Vm ips of seagull
+  - name: instrument-ips
+    description: Instrument Vm ips of seagull
     type: string
-    long_option: vm-ips
+    long_option: instrument-ips
     is_optional: false
   - name: caps
     description: Call rate of seagull case
@@ -69,7 +69,7 @@ results:
       type: string
 cmd:
   command:
-    -  python3 $s{env:OPEN_CLI_HOME}/script/seagull.py --vm-ips ${vm-ips} --caps ${caps} --number-calls ${test-times} --sutaddress ${sutaddress} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-json}
+    -  python3 $s{env:OPEN_CLI_HOME}/script/seagull.py --instrument-ips ${instrument-ips} --caps ${caps} --number-calls ${test-times} --sutaddress ${sutaddress} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-json}
   success_codes:
     - 0
   working_directory: .

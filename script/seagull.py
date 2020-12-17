@@ -350,7 +350,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Seagull Task Controller",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
-    parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
+    parser.add_argument('--instrument-ips', action='store', dest='instrument_ips', help='Instrument VM IPs for seagull')
     parser.add_argument('--caps', action='store', dest='caps', help='Call rate of seagull case')
     parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number-calls of seagull case')
     parser.add_argument('--sutaddress', action='store', dest='sut_address', help='Sut address for DRA')
@@ -374,7 +374,7 @@ if __name__ == '__main__':
                 raise SeagullException(9999, "vm {0} cap {1} is empty".format(vm_ip, cap))
 
 
-    vm_ips = args.vm_ips.split(';') if args.vm_ips else []
+    vm_ips = args.instrument_ips.split(';') if args.instrument_ips else []
     caps = args.caps.split(';') if args.caps else []
     number_calls = args.number_calls
     sut_address = args.sut_address
