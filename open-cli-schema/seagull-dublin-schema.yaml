@@ -28,17 +28,17 @@ parameters:
     description: Configuration file
     type: string
     long_option: config-json
-    is_optional: false
+    is_optional: true
   - name: instrument-ips
     description: Instrument Vm ips of seagull
     type: string
     long_option: instrument-ips
-    is_optional: false
+    is_optional: true
   - name: caps
     description: Call rate of seagull case
     type: string
     long_option: caps
-    is_optional: false
+    is_optional: true
   - name: number-calls
     description: Number-calls of seagull case
     type: string
@@ -48,7 +48,7 @@ parameters:
     description: Sut address for DRA
     type: string
     long_option: sutaddress
-    is_optional: false
+    is_optional: true
   - name: protocol
     description: Protocol of seagull case
     type: string
@@ -59,7 +59,7 @@ parameters:
     description: Mode of seagull case
     type: string
     long_option: mode
-    is_optional: false
+    is_optional: true
 results:
   direction: portrait
   attributes:
