@@ -30,33 +30,33 @@ parameters:
     long_option: config-json
     is_optional: false
   - name: vm-ips
-    description: string for seagull vm-ips
+    description: Vm ips of seagull
     type: string
     long_option: vm-ips
     is_optional: false
   - name: caps
-    description: string for caps
+    description: Call rate of seagull case
     type: string
     long_option: caps
     is_optional: false
   - name: number-calls
-    description: string for number-calls
+    description: Number-calls of seagull case
     type: string
     long_option: number-calls
     is_optional: false
   - name: instrument
-    description: string for DRA address
+    description: DRA address
     type: string
     long_option: instrument
     is_optional: false
   - name: protocol
-    description: string for protocol
+    description: Protocol of seagull case
     type: string
     default_value: diameter
     long_option: protocol
     is_optional: true
   - name: mode
-    description: string for mode
+    description: Mode of seagull case
     type: string
     long_option: mode
     is_optional: false
@@ -64,7 +64,7 @@ results:
   direction: portrait
   attributes:
     - name: data
-      description: test case result
+      description: Test case result
       scope: short
       type: string
 cmd:

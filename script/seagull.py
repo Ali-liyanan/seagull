@@ -45,8 +45,9 @@ SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"cal
 SEAGULL_SERVER_CONFIG_CALLS_CMD = r"sudo sed 's/name=\"number-calls\".*></name=\"number-calls\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 
 # fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
-fs = logging.StreamHandler()                          # 将日志输出到控制台
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
+fs = logging.StreamHandler()  # 将日志输出到控制台
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
+                    datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
 
 
 class SeagullException(Exception):
@@ -270,7 +271,7 @@ class SeagullTask(object):
             # wait the seagull stop, if anyone is stop then exit the while
             while True:
                 try:
-                    sleep(5)
+                    sleep(2)
                     logging.info('Check seagull status every 5 seconds')
                     seagull = Seagull(Linux(random.choice(vm_ips)))
                     rsp = seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
@@ -331,8 +332,6 @@ class SeagullTask(object):
 
     def __set_config(self, vm_ips):
         for vm_ip, cap in zip(vm_ips, self.caps):
-            if not cap:
-                raise SeagullException(9999, "vm {0} cap {1} is empty".format(vm_ip, cap))
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
             seagull.set_config(self.protocol, self.instrument, self.caps, self.number_calls)
 
@@ -348,13 +347,14 @@ class SeagullTask(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Seagull Task Controller", formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description="Seagull Task Controller",
+                                     formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--conf', action='store', dest='config_file_path', help='Configuration file path')
     parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
-    parser.add_argument('--caps', action='store', dest='caps', help='Caps for seagull case')
-    parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number calls for seagull case')
+    parser.add_argument('--caps', action='store', dest='caps', help='Call rate of seagull case')
+    parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number-calls of seagull case')
     parser.add_argument('--instrument', action='store', dest='instrument', help='Instrument address')
-    parser.add_argument('--protocol', action='store', dest='protocol', help='protocol for seagull case')
+    parser.add_argument('--protocol', action='store', dest='protocol', help='Protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
                                                                     '\nstart - Start task' \
                                                                     '\npause - Pause task' \
@@ -364,6 +364,16 @@ if __name__ == '__main__':
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
+
+    def _check_parameters():
+        if number_calls < 1000:
+            raise SeagullException(9999, 'number_calls must over 1000')
+
+        for vm_ip, cap in zip(vm_ips, caps):
+            if not vm_ip or not cap:
+                raise SeagullException(9999, "vm {0} cap {1} is empty".format(vm_ip, cap))
+
+
     vm_ips = args.vm_ips.split(';') if args.vm_ips else []
     caps = args.caps.split(';') if args.caps else []
     number_calls = args.number_calls
@@ -371,6 +381,8 @@ if __name__ == '__main__':
     mode = args.mode if args.mode else 'dump'
     protocol = args.protocol if args.protocol else 'diameter'
     result_file = args.result if args.result else None
+
+    _check_parameters()
 
     conf = {}
     with open(args.config_file_path) as json_file:
