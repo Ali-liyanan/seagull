@@ -353,7 +353,7 @@ if __name__ == '__main__':
     parser.add_argument('--vm-ips', action='store', dest='vm_ips', help='VM IPs for seagull')
     parser.add_argument('--caps', action='store', dest='caps', help='Call rate of seagull case')
     parser.add_argument('--number-calls', action='store', dest='number_calls', help='Number-calls of seagull case')
-    parser.add_argument('--sut-address', action='store', dest='sut_address', help='Sut address for DRA')
+    parser.add_argument('--sutaddress', action='store', dest='sut_address', help='Sut address for DRA')
     parser.add_argument('--protocol', action='store', dest='protocol', help='Protocol for seagull case')
     parser.add_argument('--mode', action='store', dest='mode', help='Supports 5 mode.' \
                                                                     '\nstart - Start task' \
