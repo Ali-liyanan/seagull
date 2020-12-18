@@ -30,7 +30,7 @@ parameters:
     long_option: config-json
     is_optional: true
   - name: instrument-ips
-    description: Instrument Vm ips of seagull
+    description: Instrument vm ips of seagull
     type: string
     long_option: instrument-ips
     is_optional: true
