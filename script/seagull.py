@@ -99,7 +99,6 @@ class Linux(object):
             remote_connect = self.ssh_client.invoke_shell()
             remote_connect.send(cmd + '\r')
             while True:
-                sleep(0.5)
                 result += remote_connect.recv(65535).decode('utf-8')
                 return result
         except Exception as e1:
