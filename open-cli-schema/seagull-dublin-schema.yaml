@@ -63,7 +63,7 @@ parameters:
 results:
   direction: portrait
   attributes:
-    - name: data
+    - name: content
       description: Test case result
       scope: short
       type: string
@@ -75,5 +75,5 @@ cmd:
   working_directory: .
   output: $s{tmp:result.json}
   result_map:
-    file_name: $o{$.data}
+    content: $o{$.content}
 

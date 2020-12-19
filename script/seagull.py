@@ -19,7 +19,6 @@
 #
 import argparse
 import json
-import logging
 import random
 from time import sleep
 
@@ -31,8 +30,10 @@ SEAGULL_SERVER_DEFAULT_PORT = 9100
 
 SEAGULL_HOME = '/opt/seagull/data'
 
-SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_client.ksh {1}:' + str(SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
-SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_server.ksh {1}:' + str(SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
+SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_client.ksh {1}:' + str(
+    SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
+SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_server.ksh {1}:' + str(
+    SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep client-stat | head -n 1 |awk '{print $9}'"
 SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,11"
@@ -44,18 +45,12 @@ SEAGULL_CLIENT_CONFIG_PORT_CMD = r"sudo sed 's/dest=.*\"/dest={0}\"/g' " + SEAGU
 SEAGULL_CLIENT_CONFIG_CAPS_CMD = r"sudo sed 's/name=\"call-rate\".*></name=\"call-rate\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 SEAGULL_SERVER_CONFIG_CALLS_CMD = r"sudo sed 's/name=\"number-calls\".*></name=\"number-calls\" value=\"{0}\"></g' " + SEAGULL_HOME + r"/{1}-env/config/conf.client.xml"
 
-# fp = logging.FileHandler('a.txt', encoding='utf-8')   # 将日志记录到文件中
-fs = logging.StreamHandler()  # 将日志输出到控制台
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
-                    datefmt="%m/%d/%Y %H:%M:%S %p", handlers=[fs])
-
 
 class SeagullException(Exception):
     def __init__(self, code, message):
         super(SeagullException, self).__init__()
         self.code = code
         self.message = message
-
 
 class Linux(object):
     def __init__(self, ip, username=None, password=None, timeout=30):
@@ -78,14 +73,14 @@ class Linux(object):
                 self.ssh_client = paramiko.SSHClient()
                 self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 self.ssh_client.connect(hostname=self.ip, username=self.username, password=self.password)
-                logging.info("Successful connection->".format(self.ip))
+                print("Successful connection->".format(self.ip))
                 return
             except Exception as e1:
                 if self.try_times != 0:
-                    logging.error('connect %s failed，try to retry' % self.ip)
+                    print('connect %s failed，try to retry' % self.ip)
                     self.try_times -= 1
                 else:
-                    logging.error('retry 3 times failed, stop the program')
+                    print('retry 3 times failed, stop the program')
                     exit(1)
 
     def close(self):
@@ -93,7 +88,7 @@ class Linux(object):
 
     def send_invoke_shell_ack(self, cmd):
         self.connect()
-        logging.info('send_invoke_shell_ack cmd: {0}'.format(cmd))
+        print('send_invoke_shell_ack cmd: {0}'.format(cmd))
         try:
 
             remote_connect = self.ssh_client.invoke_shell()
@@ -103,28 +98,28 @@ class Linux(object):
                 result += remote_connect.recv(65535).decode('utf-8')
                 return result
         except Exception as e1:
-            logging.error('send_invoke_shell_ack cmd: {0} is error'.format(cmd))
+            print('send_invoke_shell_ack cmd: {0} is error'.format(cmd))
         finally:
             self.close()
 
     def send_no_ack(self, cmd):
         self.connect()
-        logging.info('send_no_ack cmd: {0}'.format(cmd))
+        print('send_no_ack cmd: {0}'.format(cmd))
         try:
             self.ssh_client.exec_command(cmd.strip())
         except Exception as e1:
-            logging.error('send_no_ack cmd: {0} is error'.format(cmd))
+            print('send_no_ack cmd: {0} is error'.format(cmd))
         finally:
             self.close()
 
     def send_ack(self, cmd):
         self.connect()
-        logging.info('send_ack cmd: {0}'.format(cmd))
+        print('send_ack cmd: {0}'.format(cmd))
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd.strip())
             return stdout.read().decode('utf-8').strip(), stderr.read().decode('utf-8').strip()
         except Exception as e1:
-            logging.error('send_ack cmd: {0} is error'.format(cmd))
+            print('send_ack cmd: {0} is error'.format(cmd))
         finally:
             self.close()
 
@@ -147,7 +142,7 @@ class Seagull(object):
                 self.linux.send_ack(SEAGULL_SERVER_CONFIG_CALLS_CMD.format(number_calls, protocol))
         except Exception as e1:
             msg = 'set_config vm {0} failed'.format(self.linux.ip)
-            logging.error(msg)
+            print(msg)
             raise SeagullException(9999, msg)
 
     def start(self, protocol):
@@ -156,7 +151,7 @@ class Seagull(object):
             self.linux.send_no_ack(SEAGULL_CLIENT_CMD.format(protocol, self.linux.ip))
         except Exception as e1:
             msg = 'start vm {0} failed'.format(self.linux.ip)
-            logging.error(msg)
+            print(msg)
             raise SeagullException(9999, msg)
 
     def download_client(self, protocol):
@@ -165,7 +160,7 @@ class Seagull(object):
             out = self.linux.send_ack(SEAGULL_CLIENT_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
-            logging.error('download_client {0}:{1} failed'.format(self.linux.ip, protocol))
+            print('download_client {0}:{1} failed'.format(self.linux.ip, protocol))
             return
 
     def download_server(self, protocol):
@@ -174,7 +169,7 @@ class Seagull(object):
             out = self.linux.send_ack(SEAGULL_SERVER_RESULT_FILTER_CMD % (protocol, out))
             return out[0].split(';') if out[0] else None
         except Exception as e1:
-            logging.error('download_server {0}:{1} failed'.format(self.linux.ip, protocol))
+            print('download_server {0}:{1} failed'.format(self.linux.ip, protocol))
             return
 
     def status(self, control_port):
@@ -183,7 +178,7 @@ class Seagull(object):
             rsp = requests.get(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('status {0} failed'.format(url))
+            print('status {0} failed'.format(url))
             return
 
     def dump(self, control_port):
@@ -192,7 +187,7 @@ class Seagull(object):
             rsp = requests.get(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('dump {0} failed'.format(url))
+            print('dump {0} failed'.format(url))
             return
 
     def set_rate(self, control_port, value):
@@ -201,7 +196,7 @@ class Seagull(object):
             rsp = requests.put(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('set_rate {0} failed'.format(url))
+            print('set_rate {0} failed'.format(url))
             return
 
     def ramp(self, control_port, value, duration):
@@ -211,7 +206,7 @@ class Seagull(object):
             rsp = requests.put(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('ramp {0} failed'.format(url))
+            print('ramp {0} failed'.format(url))
             return
 
     def stop(self, control_port):
@@ -220,7 +215,7 @@ class Seagull(object):
             rsp = requests.put(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('stop {0} failed'.format(url))
+            print('stop {0} failed'.format(url))
             return
 
     def pause(self, control_port):
@@ -229,7 +224,7 @@ class Seagull(object):
             rsp = requests.put(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('pause {0} failed'.format(url))
+            print('pause {0} failed'.format(url))
             return
 
     def burst(self, control_port):
@@ -241,7 +236,7 @@ class Seagull(object):
             rsp = requests.put(url)
             return rsp.status_code, rsp.text
         except Exception as e1:
-            logging.error('burst {0} failed'.format(url))
+            print('burst {0} failed'.format(url))
             return
 
 
@@ -269,28 +264,28 @@ class SeagullTask(object):
                 seagull.start(self.protocol)
             except SeagullException as e1:
                 started_vm_ips.append(vm_ip)
-                logging.error('VM {0} start failed'.format(vm_ip), e1)
+                print('VM {0} start failed'.format(vm_ip), e1)
                 break
 
         # 4、rollback vm or return the execute result
         if started_vm_ips:
             self.stop(started_vm_ips)
             msg = 'Rollback vms {0}'.format(started_vm_ips)
-            logging.error(msg)
+            print(msg)
             raise SeagullException(9999, msg)
-        else:
-            # wait the seagull stop, if anyone is stop then exit the while
-            while True:
-                try:
-                    sleep(5)
-                    logging.info('Check seagull status every 5 seconds')
-                    seagull = Seagull(Linux(random.choice(vm_ips)))
-                    rsp = seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
-                    if not rsp:
-                        break
-                except Exception as e1:
-                    logging.error('Seagull vms stop error')
-                    break
+        # else:
+        #     # wait the seagull stop, if anyone is stop then exit the while
+        #     while True:
+        #         try:
+        #             sleep(5)
+        #             print('Check seagull status every 5 seconds')
+        #             seagull = Seagull(Linux(random.choice(vm_ips)))
+        #             rsp = seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
+        #             if not rsp:
+        #                 break
+        #         except Exception as e1:
+        #             print('Seagull vms stop error')
+        #             break
 
         return self.__download(vm_ips)
 
@@ -352,7 +347,7 @@ class SeagullTask(object):
             client_rsp = seagull.status(SEAGULL_CLIENT_DEFAULT_PORT)
             server_rsp = seagull.status(SEAGULL_SERVER_DEFAULT_PORT)
             if client_rsp or server_rsp:
-                logging.error('VM {0} is running'.format(vm_ip))
+                print('VM {0} is running'.format(vm_ip))
                 return True
 
 
@@ -402,22 +397,22 @@ if __name__ == '__main__':
             account = {'username': instrument_mgs['username'], 'password': instrument_mgs['password']}
             conf[instrument_mgs['address']] = account
 
-    output = {}
+    result = {}
     try:
         task = SeagullTask(protocol, conf, sut_address, caps, number_calls)
         if mode == 'start':
-            output['data'] = task.start(vm_ips)
+            result['content'] = task.start(vm_ips)
         elif mode == 'pause':
-            output['data'] = task.pause(vm_ips)
+            result['content'] = task.pause(vm_ips)
         elif mode == 'stop':
-            output['data'] = task.stop(vm_ips)
+            result['content'] = task.stop(vm_ips)
         elif mode == 'dump':
-            output['data'] = task.dump(vm_ips)
+            result['content'] = task.dump(vm_ips)
 
         print('Done')
     finally:
-        seagull_result = json.dumps(output, default=lambda x: x.__dict__)
-        print(seagull_result)
+        out_put = json.dumps(result, default=lambda x: x.__dict__)
+        print(out_put)
         if result_file:
             with open(result_file, "w+") as f:
-                f.write(seagull_result)
+                f.write(out_put)
