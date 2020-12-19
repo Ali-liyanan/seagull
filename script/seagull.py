@@ -52,6 +52,7 @@ class SeagullException(Exception):
         self.code = code
         self.message = message
 
+
 class Linux(object):
     def __init__(self, ip, username=None, password=None, timeout=30):
         self.ip = ip
@@ -273,21 +274,7 @@ class SeagullTask(object):
             msg = 'Rollback vms {0}'.format(started_vm_ips)
             print(msg)
             raise SeagullException(9999, msg)
-        # else:
-        #     # wait the seagull stop, if anyone is stop then exit the while
-        #     while True:
-        #         try:
-        #             sleep(5)
-        #             print('Check seagull status every 5 seconds')
-        #             seagull = Seagull(Linux(random.choice(vm_ips)))
-        #             rsp = seagull.status(random.choice([SEAGULL_CLIENT_DEFAULT_PORT, SEAGULL_SERVER_DEFAULT_PORT]))
-        #             if not rsp:
-        #                 break
-        #         except Exception as e1:
-        #             print('Seagull vms stop error')
-        #             break
-
-        return self.__download(vm_ips)
+        return "Success"
 
     def pause(self, vm_ips):
         for vm_ip in vm_ips:
