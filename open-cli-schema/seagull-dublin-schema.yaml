@@ -69,7 +69,7 @@ results:
       type: string
 cmd:
   command:
-    -  python3 $s{env:OPEN_CLI_HOME}/script/seagull.py --instrument-ips ${instrument-ips} --caps ${caps} --number-calls ${test-times} --sutaddress ${sutaddress} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-json}
+    -  python3 $s{env:OPEN_CLI_HOME}/script/seagull.py --instrument-ips ${instrument-ips} --caps ${caps} --number-calls ${number-calls} --sutaddress ${sutaddress} --protocol ${protocol} --mode ${mode} --result-json $s{tmp:result.json} --conf ${config-json}
   success_codes:
     - 0
   working_directory: .
