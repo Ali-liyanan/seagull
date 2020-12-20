@@ -252,7 +252,7 @@ class SeagullTask(object):
     def start(self, vm_ips):
         # 1、check vm status
         if self.__check(vm_ips):
-            return
+            raise SeagullException(9999, 'One of seagulls is running, Task start failed')
 
         # 2、set vm config
         self.__set_config(vm_ips)
@@ -265,7 +265,7 @@ class SeagullTask(object):
                 seagull.start(self.protocol)
             except SeagullException as e1:
                 started_vm_ips.append(vm_ip)
-                print('VM {0} start failed'.format(vm_ip), e1)
+                print('Seagull {0} start failed'.format(vm_ip), e1)
                 break
 
         # 4、rollback vm or return the execute result
@@ -304,7 +304,10 @@ class SeagullTask(object):
             counters[vm_ip] = counter
         return counters
 
-    def __download(self, vm_ips):
+    def download(self, vm_ips):
+        if self.__check(vm_ips):
+            raise SeagullException(9999, 'One of seagulls is running, Task is not finished')
+
         result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},
                   'server': {'incoming_calls': 0},
                   'failed_calls': 0}
@@ -334,7 +337,7 @@ class SeagullTask(object):
             client_rsp = seagull.status(SEAGULL_CLIENT_DEFAULT_PORT)
             server_rsp = seagull.status(SEAGULL_SERVER_DEFAULT_PORT)
             if client_rsp or server_rsp:
-                print('VM {0} is running'.format(vm_ip))
+                print('Seagull {0} is running'.format(vm_ip))
                 return True
 
 
@@ -351,8 +354,9 @@ if __name__ == '__main__':
                                                                     '\nstart - Start task' \
                                                                     '\npause - Pause task' \
                                                                     '\nstop - Stop task' \
+                                                                    '\ndownload - Download the task results' \
                                                                     '\ndump - Dump real-time counters of each Seagull VM',
-                        choices=('start', 'pause', 'stop', 'dump'))
+                        choices=('start', 'pause', 'stop', 'download', 'dump'))
     parser.add_argument('--result-json', action='store', dest='result', help='Result json file.')
     args = parser.parse_args()
 
@@ -393,6 +397,8 @@ if __name__ == '__main__':
             result['content'] = task.pause(vm_ips)
         elif mode == 'stop':
             result['content'] = task.stop(vm_ips)
+        elif mode == 'download':
+            result['content'] = task.download(vm_ips)
         elif mode == 'dump':
             result['content'] = task.dump(vm_ips)
 
