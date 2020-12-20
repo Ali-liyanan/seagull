@@ -274,21 +274,21 @@ class SeagullTask(object):
             msg = 'Rollback vms {0}'.format(started_vm_ips)
             print(msg)
             raise SeagullException(9999, msg)
-        return "Success"
+        return "completed"
 
     def pause(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             seagull.pause(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.pause(SEAGULL_SERVER_DEFAULT_PORT)
-        return "Success"
+        return "completed"
 
     def stop(self, vm_ips):
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip))
             seagull.stop(SEAGULL_CLIENT_DEFAULT_PORT)
             seagull.stop(SEAGULL_SERVER_DEFAULT_PORT)
-        return "Success"
+        return "completed"
 
     def dump(self, vm_ips):
         counters = {}
@@ -306,7 +306,7 @@ class SeagullTask(object):
 
     def download(self, vm_ips):
         if self.__check(vm_ips):
-            raise SeagullException(9999, 'One of seagulls is running, Task is not finished')
+            return "failed"
 
         result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},
                   'server': {'incoming_calls': 0},
@@ -403,8 +403,6 @@ if __name__ == '__main__':
             result['content'] = task.dump(vm_ips)
 
         print('Done')
-    except Exception as e1:
-        result['content'] = e1.message
     finally:
         out_put = json.dumps(result, default=lambda x: x.__dict__)
         print(out_put)
