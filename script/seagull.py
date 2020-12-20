@@ -302,15 +302,13 @@ class SeagullTask(object):
             counter['server'] = server_rsp[1].replace('\r\n', ',') if server_rsp and server_rsp[0] == 200 else None
 
             counters[vm_ip] = counter
-        return counters
+        return str(counters)
 
     def download(self, vm_ips):
         if self.__check(vm_ips):
             return "failed"
 
-        result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},
-                  'server': {'incoming_calls': 0},
-                  'failed_calls': 0}
+        result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},'server': {'incoming_calls': 0},'failed_calls': 0}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
             out_client = seagull.download_client(self.protocol)
@@ -324,7 +322,7 @@ class SeagullTask(object):
                 result['server']['incoming_calls'] += int(out_server[0])
 
             result['failed_calls'] += (result['client']['outgoing_calls'] - result['server']['incoming_calls'])
-        return result
+        return str(result)
 
     def __set_config(self, vm_ips):
         for vm_ip, cap in zip(vm_ips, self.caps):
