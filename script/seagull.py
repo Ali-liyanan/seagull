@@ -403,6 +403,8 @@ if __name__ == '__main__':
             result['content'] = task.dump(vm_ips)
 
         print('Done')
+    except Exception as e1:
+        result['content'] = e1.message
     finally:
         out_put = json.dumps(result, default=lambda x: x.__dict__)
         print(out_put)
