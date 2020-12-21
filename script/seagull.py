@@ -301,7 +301,8 @@ class SeagullTask(object):
             server_rsp = seagull.dump(SEAGULL_SERVER_DEFAULT_PORT)
             counter['server'] = server_rsp[1].replace('\r\n', ',') if server_rsp and server_rsp[0] == 200 else None
 
-            counters[vm_ip] = counter
+            suite_name = self.conf[vm_ip]['suite_name']
+            counters[suite_name] = counter
         return str(counters)
 
     def download(self, vm_ips):
@@ -383,7 +384,8 @@ if __name__ == '__main__':
         json_conf = json.load(json_file)
         for suite in json_conf['suites']:
             instrument_mgs = suite['instrument_mgs']
-            account = {'username': instrument_mgs['username'], 'password': instrument_mgs['password']}
+            account = {'username': instrument_mgs['username'], 'password': instrument_mgs['password'],
+                       'suite_name': suite['name']}
             conf[instrument_mgs['address']] = account
 
     result = {}
