@@ -36,7 +36,7 @@ SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_serve
     SEAGULL_SERVER_DEFAULT_PORT) + r' && ls'
 
 SEAGULL_CLIENT_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep client-stat | head -n 1 |awk '{print $9}'"
-SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,11"
+SEAGULL_CLIENT_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 5,7,11"
 
 SEAGULL_SERVER_RESULT_FILE_CMD = "sudo ls -lt " + SEAGULL_HOME + r"/%s-env/logs | grep server-stat | head -n 1 |awk '{print $9}'"
 SEAGULL_SERVER_RESULT_FILTER_CMD = "sudo cat " + SEAGULL_HOME + r"/%s-env/logs/%s | awk 'END {print}' | cut -d';' -f 9"
@@ -309,20 +309,20 @@ class SeagullTask(object):
         if self.__check(vm_ips):
             return "failed"
 
-        result = {'client': {'elapsed_time': None, 'outgoing_calls': 0},'server': {'incoming_calls': 0},'failed_calls': 0}
+        result = {'elapsed_time': None, 'call_rate': 0, 'outgoing_calls': 0, 'incoming_calls': 0, 'failed_calls': 0}
         for vm_ip in vm_ips:
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
             out_client = seagull.download_client(self.protocol)
             if out_client:
-                # result['client']['call_rate'] += out_client[0]
-                result['client']['elapsed_time'] = out_client[0]
-                result['client']['outgoing_calls'] += int(out_client[1])
+                result['elapsed_time'] = out_client[0]
+                result['call_rate'] = out_client[1]
+                result['outgoing_calls'] += int(out_client[2])
 
             out_server = seagull.download_server(self.protocol)
             if out_server:
-                result['server']['incoming_calls'] += int(out_server[0])
+                result['incoming_calls'] += int(out_server[0])
 
-            result['failed_calls'] += (result['client']['outgoing_calls'] - result['server']['incoming_calls'])
+            result['failed_calls'] += (result['outgoing_calls'] - result['incoming_calls'])
         return str(result)
 
     def __set_config(self, vm_ips):
