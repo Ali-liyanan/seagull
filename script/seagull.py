@@ -28,7 +28,7 @@ import requests
 SEAGULL_CLIENT_DEFAULT_PORT = 9000
 SEAGULL_SERVER_DEFAULT_PORT = 9100
 
-SEAGULL_HOME = '/opt/seagull/data'
+SEAGULL_HOME = '/opt/seagull'
 
 SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_client.ksh {1}:' + str(
     SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
@@ -135,12 +135,12 @@ class Seagull(object):
     def __repr__(self):
         return str(self)
 
-    def set_config(self, protocol, sut_address, caps, number_calls):
+    def set_config(self, protocol, sut_address, caps, number_call):
         try:
             self.linux.send_ack(SEAGULL_CLIENT_CONFIG_PORT_CMD.format(sut_address, protocol))
             self.linux.send_ack(SEAGULL_CLIENT_CONFIG_CAPS_CMD.format(caps, protocol))
-            if number_calls:
-                self.linux.send_ack(SEAGULL_SERVER_CONFIG_CALLS_CMD.format(number_calls, protocol))
+            if number_call:
+                self.linux.send_ack(SEAGULL_SERVER_CONFIG_CALLS_CMD.format(number_call, protocol))
         except Exception as e1:
             msg = 'set_config vm {0} failed'.format(self.linux.ip)
             print(msg)
@@ -251,8 +251,9 @@ class SeagullTask(object):
 
     def start(self, vm_ips):
         # 1、check vm status
-        if self.__check(vm_ips):
-            raise SeagullException(9999, 'One of seagulls is running, Task start failed')
+        check = self.__check(vm_ips)
+        if check:
+            raise SeagullException(9999, 'seagull {} is running, Task start failed'.format(check))
 
         # 2、set vm config
         self.__set_config(vm_ips)
@@ -326,9 +327,9 @@ class SeagullTask(object):
         return str(result)
 
     def __set_config(self, vm_ips):
-        for vm_ip, cap in zip(vm_ips, self.caps):
+        for vm_ip, cap, number_call in zip(vm_ips, self.caps, self.number_calls):
             seagull = Seagull(Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password']))
-            seagull.set_config(self.protocol, self.sut_address, self.caps, self.number_calls)
+            seagull.set_config(self.protocol, self.sut_address, cap, number_call)
 
     def __check(self, vm_ips):
         for vm_ip in vm_ips:
@@ -337,7 +338,7 @@ class SeagullTask(object):
             server_rsp = seagull.status(SEAGULL_SERVER_DEFAULT_PORT)
             if client_rsp or server_rsp:
                 print('Seagull {0} is running'.format(vm_ip))
-                return True
+                return vm_ip
 
 
 if __name__ == '__main__':
@@ -361,17 +362,16 @@ if __name__ == '__main__':
 
 
     def _check_parameters():
-        if number_calls and int(number_calls) < 1000:
-            raise SeagullException(9999, 'number_calls must over 1000')
-
-        for vm_ip, cap in zip(vm_ips, caps):
+        for vm_ip, cap, number_call in zip(vm_ips, caps, number_calls):
+            if number_call and int(number_call) < 1000:
+                raise SeagullException(9999, 'number_calls must over 1000')
             if not vm_ip or not cap:
                 raise SeagullException(9999, "vm {0} cap {1} is empty".format(vm_ip, cap))
 
 
     vm_ips = args.instrument_ips.split(';') if args.instrument_ips else []
     caps = args.caps.split(';') if args.caps else []
-    number_calls = args.number_calls
+    number_calls = args.number_calls.split(';') if args.number_calls else []
     sut_address = args.sut_address
     mode = args.mode if args.mode else 'dump'
     protocol = args.protocol if args.protocol else 'diameter'
