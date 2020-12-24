@@ -308,7 +308,7 @@ class SeagullTask(object):
 
     def download(self, vm_ips):
         if self.__check(vm_ips):
-            return "failed"
+            return "in-progress"
 
         result = {'elapsed_time': None, 'call_rate': 0, 'outgoing_calls': 0, 'incoming_calls': 0, 'failed_calls': 0}
         for vm_ip in vm_ips:
