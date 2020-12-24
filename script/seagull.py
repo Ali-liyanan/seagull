@@ -28,6 +28,8 @@ SEAGULL_SERVER_DEFAULT_PORT = 9100
 
 SEAGULL_HOME = '/opt/seagull'
 
+SEAGULL_HOME_EXIST_CMD = '[ -d {} ] && echo True || echo False'.format(SEAGULL_HOME)  #判断SEAGULL_HOME是否存在
+
 SEAGULL_CLIENT_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_client.ksh {1}:' + str(
     SEAGULL_CLIENT_DEFAULT_PORT) + r' && ls'
 SEAGULL_SERVER_CMD = 'cd ' + SEAGULL_HOME + r'/{0}-env/run && sudo ./start_server.ksh {1}:' + str(
@@ -248,6 +250,11 @@ class SeagullTask(object):
         self.number_calls = number_calls
 
     def start(self, vm_ips):
+        # 0、check vm SEAGULL_HOME
+        check_dir = self.__check_dir(vm_ips)
+        if len(check_dir) > 0:
+            raise SeagullException(9999, '{} vim SEAGULL_HOME is not exist'.format(check_dir))
+
         # 1、check vm status
         check = self.__check(vm_ips)
         if check:
@@ -337,6 +344,16 @@ class SeagullTask(object):
             if client_rsp or server_rsp:
                 print('Seagull {0} is running'.format(vm_ip))
                 return vm_ip
+
+    def __check_dir(self, vm_ips):
+        """check dir SEAGULL_HOME"""
+        vm_not_exist_seagull_home = []
+        for vm_ip in vm_ips:
+            vm_conn = Linux(vm_ip, self.conf[vm_ip]['username'], self.conf[vm_ip]['password'])
+            out, err = vm_conn.send_ack(SEAGULL_HOME_EXIST_CMD)
+            if not eval(out):
+                vm_not_exist_seagull_home.append(vm_ip)
+        return vm_not_exist_seagull_home
 
 
 if __name__ == '__main__':
