@@ -251,7 +251,7 @@ class SeagullTask(object):
         # 1、check vm status
         check = self.__check(vm_ips)
         if check:
-            raise SeagullException(9999, 'seagull {} is running, Task start failed'.format(check))
+            raise SeagullException(9999, 'seagull {} is running, task start failed'.format(check))
 
         # 2、set vm config
         self.__set_config(vm_ips)
