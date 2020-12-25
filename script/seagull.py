@@ -78,7 +78,7 @@ class Linux(object):
                 return
             except Exception as e1:
                 if self.try_times != 0:
-                    print('connect %s failed，try to retry' % self.ip)
+                    print(f'connect {self.ip} failed，try to retry : {e1}')
                     self.try_times -= 1
                 else:
                     print('retry 3 times failed, stop the program')
